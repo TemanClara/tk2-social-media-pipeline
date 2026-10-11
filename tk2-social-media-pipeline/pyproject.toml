@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tk2-social-media-pipeline"
+version = "0.1.0"
+description = "Pengumpulan data percakapan publik mengenai Teddy Indra Wijaya (TK-2 Analitika Media Sosial)"
+requires-python = ">=3.10"
+
+# Versi dipatok pada rentang minor yang sama (~=) agar tiap anggota tim
+# mendapat perilaku yang sama. Untuk penguncian penuh, lihat
+# requirements.lock.txt dan cara membuatnya di README.
+# Hanya yang benar-benar dipakai kode saat ini. Dependensi yang didaftarkan
+# tapi tidak dipakai memperbesar peluang gagal pasang tanpa manfaat.
+dependencies = [
+    "requests~=2.32",
+    "python-dotenv~=1.0",
+    "PyYAML~=6.0",
+]
+
+[project.optional-dependencies]
+# Library scraping, diisi setelah keputusan di docs/decisions.md
+# contoh: scrapers = ["playwright~=1.47"]
+scrapers = []
+# Untuk rekap dan pemeriksaan dataset
+analysis = ["pandas~=2.2", "tqdm~=4.66"]
+
+[project.scripts]
+tk2-scrape = "src.run_scrape:main"
+
+[tool.setuptools.packages.find]
+include = ["src*"]

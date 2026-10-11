@@ -1,0 +1,2 @@
+# Pemasangan lewat pyproject.toml (sumber tunggal daftar dependensi).
+-e .
