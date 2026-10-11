@@ -1,0 +1,33 @@
+# Kredensial — JANGAN pernah di-commit
+.env
+*.pem
+*.key
+
+# Data berisi konten pengguna. Hanya data/sample yang boleh naik,
+# dan isinya wajib sudah teranonimisasi.
+data/raw/*
+data/interim/*
+data/processed/*
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+build/
+dist/
+.ipynb_checkpoints/
+
+# Log
+logs/
+*.log
+
+# macOS / editor
+.DS_Store
+.vscode/
+.idea/
