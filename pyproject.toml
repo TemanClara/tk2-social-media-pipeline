@@ -20,9 +20,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Library scraping, diisi setelah keputusan di docs/decisions.md
-# contoh: scrapers = ["playwright~=1.47"]
-scrapers = []
+# Dibutuhkan library omkarcloud di third_party/ (scraper TikTok dan Instagram).
+# Versi yang diuji: curl_cffi 0.16.3, marshmallow 4.3.1.
+scrapers = ["curl_cffi~=0.16", "marshmallow~=4.3"]
 # Untuk rekap dan pemeriksaan dataset
 analysis = ["pandas~=2.2", "tqdm~=4.66"]
 

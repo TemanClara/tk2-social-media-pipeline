@@ -1,0 +1,327 @@
+# Cara Kerja Scraper dan Cara Menjalankannya
+
+Dokumen ini menjelaskan apa yang sebenarnya diambil oleh tiap scraper, dalam
+urutan apa, batasnya di mana, dan perintah untuk menjalankannya. Isinya
+berdasarkan kode di `src/scrapers/` dan uji coba 15 Okt 2026 (bukti di
+`docs/evidence/`). Hal yang belum diuji ditandai **belum diuji**.
+
+## Ringkasan
+
+| | X | TikTok | Instagram |
+|---|---|---|---|
+| Cara akses | X API v2 resmi, bayar per post yang dibaca | Library omkarcloud/tiktok-scraper, tanpa login | Library omkarcloud/instagram-scraper, tanpa login |
+| Kredensial di `.env` | `X_BEARER_TOKEN`, `PSEUDONYM_SALT` | `PSEUDONYM_SALT` | `PSEUDONYM_SALT` |
+| Sumber bawaan | Satu kueri gabungan `kata_kunci` + `hashtag` | `kata_kunci` dan `hashtag` | `kata_kunci` dan `hashtag` |
+| Sumber opsional | (tidak ada) | `akun_target.tiktok` dengan `--with-accounts` | `akun_target.instagram` dengan `--with-accounts` |
+| Urutan hasil | **Terbaru lebih dulu** | Ranking TikTok, cenderung video terbaru | "Top reels" pilihan Instagram |
+| Filter tanggal | Di sisi API (`start_time`, `end_time`) | Disaring setelah diambil | Disaring setelah diambil |
+| Yang ikut diambil | Balasan dan quote-tweet | Komentar | Komentar |
+| `item_type` yang muncul | `post`, `reply`, `quote` | `post`, `comment` | `post`, `comment` |
+
+Semua scraper menulis record dengan kolom yang sama (`UNIFIED_FIELDS` di
+`src/scrapers/base.py`, kamusnya di `data/README.md`). Username tidak pernah
+disimpan; yang disimpan `author_hash`, yaitu SHA-256 dari username (atau ID
+akun untuk X) yang diberi `PSEUDONYM_SALT`.
+
+## Rentang waktu: `--window`
+
+Berlaku untuk ketiga platform, dibaca dari `config/keywords.yaml`.
+
+| Nilai | Artinya |
+|---|---|
+| `periode` (bawaan) | Satu rentang dari `periode.mulai` sampai akhir hari `periode.selesai` (sekarang 1 Okt 2024 s/d 30 Sep 2026) |
+| `peristiwa` | Satu rentang per `peristiwa_pemicu`: dari tanggal peristiwa sampai `jendela_hari` hari sesudahnya |
+
+Dengan isi `keywords.yaml` sekarang, `peristiwa` menghasilkan tiga rentang:
+20 Okt–3 Nov 2024, 25 Feb–11 Mar 2025, dan 13–27 Mei 2026.
+
+Tafsiran "sampai 14 hari sesudahnya" masih perlu dikonfirmasi ke C1, karena
+komentar di `keywords.yaml` menulis "di sekitar peristiwa". Kalau yang
+dimaksud sebelum dan sesudah, cukup ubah `date_ranges()` di
+`src/scrapers/_common.py`.
+
+Untuk X, rentang dikirim ke API, jadi pencariannya memang di tanggal itu.
+Untuk TikTok dan Instagram, pencariannya tidak bisa diberi tanggal; rentang
+hanya dipakai untuk **membuang** hasil yang di luar rentang. Akibatnya
+`peristiwa` lebih berguna untuk X daripada untuk dua platform lainnya.
+
+## X
+
+**Alur per rentang waktu:**
+
+1. **Pencarian arsip penuh** (`GET /2/tweets/search/all`) dengan satu kueri
+   gabungan, misalnya:
+   ```
+   ("Teddy Indra Wijaya" OR "Mayor Teddy" OR "Letkol Teddy" OR "Seskab Teddy" OR #mayorteddy) -is:retweet lang:id
+   ```
+   Kuerinya dibentuk otomatis dari `kata_kunci`, `hashtag`, dan `bahasa` di
+   `keywords.yaml`. Retweet dibuang karena teksnya terpotong dan metriknya
+   milik post asli. Hasil datang **dari yang terbaru ke yang terlama**; di uji
+   coba, semua post bertanggal 30 Sep 2026, hari terakhir periode.
+2. **Balasan**, hanya untuk post yang `reply_count > 0`: pencarian
+   `conversation_id:<id> -is:retweet` mulai dari waktu post itu dibuat. Satu
+   percakapan hanya diambil sekali per run.
+3. **Quote-tweet**, hanya untuk post yang `quote_count > 0`
+   (`GET /2/tweets/:id/quote_tweets`).
+
+Hasil pencarian di langkah 1 bisa berupa balasan atau quote juga, kalau
+teksnya cocok dengan kueri. Jenisnya ditentukan dari `referenced_tweets`.
+
+**Pengaman biaya.** Setiap post yang dibaca ditagih, termasuk yang nanti
+dibuang sebagai duplikat.
+
+| Batas | Nilai | Diatur di |
+|---|---|---|
+| Total post dibaca per run | 2.000 | `X_MAX_POSTS_READ` di `.env` |
+| Halaman pencarian per rentang | 5 (100 post per halaman) | `--max-pages` |
+| Balasan per percakapan | 100 | `MAX_REPLIES` di `x_scraper.py` |
+| Quote per post | 50 | `MAX_QUOTES` di `x_scraper.py` |
+| Ukuran halaman saat uji | mengikuti `--limit` (min. 10, maks. 100) | `--limit` |
+
+Begitu `X_MAX_POSTS_READ` habis, scraper berhenti meminta data dan mencatat
+`budget_exhausted` di manifest. Parameter `expansions` sengaja tidak dipakai
+supaya objek pengguna tidak ikut ditagih.
+
+Karena hasilnya terbaru lebih dulu, run dengan `--window periode` dan batas
+2.000 post kemungkinan besar hanya mencakup minggu-minggu terakhir periode.
+Supaya datanya tersebar, pakai `--window peristiwa`.
+
+**Pemetaan kolom:**
+
+| Kolom | Isi |
+|---|---|
+| `author_hash` | Hash dari `author_id` (ID numerik akun, tetap walau akun ganti username) |
+| `text` | `note_tweet.text` bila ada (post panjang, sudah diuji), selain itu `text` |
+| `parent_id` | ID post yang dibalas atau dikutip; kosong untuk post biasa |
+| `share_count` | `retweet_count` |
+| `query` | Kata kunci/hashtag yang muncul di teks, mis. `Mayor Teddy; #mayorteddy`. Balasan dan quote mewarisi `query` post induknya |
+| `url` | `https://x.com/i/status/<id>` (tanpa username) |
+
+**Rate limit.** Status 429 dan 5xx dicoba ulang sampai `MAX_RETRIES` kali
+(bawaan 4, di `.env`). Lama tunggunya mengikuti header `Retry-After` atau
+`x-rate-limit-reset` dari X, paling lama 15 menit; bila header tidak ada,
+tunggu bertambah dua kali lipat tiap percobaan.
+
+## TikTok
+
+**Alur per sumber:**
+
+| Sumber | Cara ambil | Isi per halaman |
+|---|---|---|
+| `kata_kunci:<kata>` | Pencarian video edisi Indonesia (`country=id`) | ~20 video |
+| `hashtag:<tag>` | Video di bawah hashtag, urutan ranking TikTok | ~30 video |
+| `akun:<username>` | Video terbaru akun (hanya dengan `--with-accounts`) | ~35 video |
+
+Untuk tiap video:
+
+1. Video di luar rentang waktu dibuang dan dihitung sebagai `out_of_period`.
+   Pada sumber akun, scraper berhenti membuka halaman berikutnya begitu
+   menemukan video (yang bukan video sematan) lebih tua dari awal rentang.
+2. Video yang sudah diambil dari sumber lain di run yang sama dilewati.
+3. Video disimpan sebagai `post`, lalu komentarnya diambil (~50 per halaman,
+   sampai `--comment-pages`), kecuali jumlah komentarnya 0.
+
+Komentar yang diambil hanya komentar tingkat atas. Balasan di bawah komentar
+**tidak** diambil, walau kolom `reply_count` komentar terisi.
+
+**Temuan penting.** Pencarian TikTok cenderung menampilkan video terbaru. Di
+uji coba, hanya 2 dari 67 video yang masuk periode, karena sisanya diunggah
+setelah 30 Sep 2026. Untuk run penuh, naikkan `--max-pages` (misalnya 10).
+
+**Catatan teknis.** Sebelum mencari, library membuka satu halaman tiktok.com
+untuk mendapatkan cookie sesi. Bawaannya halaman `/@tiktok`, yang dari IP
+Indonesia dijawab dengan halaman anti-bot. Scraper menggantinya dengan
+`/explore` (`BOOT_PATH` di `tiktok_scraper.py`), yang tidak diblokir.
+
+**Pemetaan kolom:**
+
+| Kolom | Video | Komentar |
+|---|---|---|
+| `parent_id` | kosong | ID video |
+| `conversation_id` | ID video | ID video |
+| `reply_count` | jumlah komentar | jumlah balasan |
+| `share_count` | jumlah share | kosong |
+| `url` | `https://www.tiktok.com/@/video/<id>` | tautan komentar |
+| `query` | mis. `kata_kunci:Mayor Teddy` | sama dengan videonya |
+
+Tautan asli TikTok memuat username (`/@<username>/video/<id>`), jadi kolom
+`url` sengaja memakai bentuk `/@/video/<id>` yang tetap bisa dibuka.
+
+## Instagram
+
+Semua diambil **tanpa login**, jadi hanya yang ditampilkan Instagram kepada
+pengunjung yang belum login.
+
+**Alur per sumber:**
+
+| Sumber | Cara ambil | Isi per halaman |
+|---|---|---|
+| `kata_kunci:<kata>` | Halaman populer kata kunci (`/popular/<kata>/`) | 12 reels |
+| `hashtag:<tag>` | Halaman hashtag | 12 reels |
+| `akun:<username>` | Linimasa akun, terbaru lebih dulu (hanya dengan `--with-accounts`) | 12 unggahan |
+
+Untuk tiap unggahan:
+
+1. Hasil kata kunci dan hashtag tidak memuat tanggal dan jumlah like, jadi
+   scraper meminta detail unggahan dulu (satu permintaan tambahan per
+   unggahan).
+2. Unggahan di luar rentang waktu dibuang (`out_of_period`). Pada sumber akun,
+   berhenti begitu menemukan unggahan non-sematan yang lebih tua dari awal
+   rentang. Akun privat dilewati (`private_accounts_skipped`).
+3. Unggahan disimpan sebagai `post`, lalu komentarnya diambil sampai habis
+   atau sampai `--comment-pages`. Library meminta 24 komentar per halaman,
+   tapi praktiknya hanya ~12–14 yang datang, dan pada sebagian unggahan
+   halamannya berhenti lebih awal. Bila batas halaman tercapai sebelum
+   komentar habis, manifest mencatat `comment_page_cap_reached`.
+
+**Batasan dari Instagram, bukan dari kode:**
+
+- Kata kunci dan hashtag hanya memberi sekitar 20–30 unggahan teratas, tanpa
+  tab terbaru. Volume data Instagram terutama datang dari komentar.
+- Halaman populer hanya menjawab huruf kecil ("Mayor Teddy" memberi 0
+  unggahan, "mayor teddy" memberi 12). Scraper otomatis mengubah kata kunci
+  ke huruf kecil; kolom `query` tetap memakai tulisan di `keywords.yaml`.
+- `#mayorteddy` memberi 0 unggahan saat diuji, sedangkan `#teddyindrawijaya`
+  memberi 20. Penyebabnya belum diketahui.
+- Kolom `reply_count` pada komentar umumnya kosong.
+
+**Pemetaan kolom:** sama seperti TikTok, dengan dua perbedaan. `share_count`
+selalu kosong karena Instagram tidak menyediakannya, dan `url` komentar
+berbentuk `https://www.instagram.com/p/<kode>/c/<id komentar>/`.
+
+## Perilaku bersama
+
+**Jeda antar permintaan.** Setiap permintaan ke TikTok dan Instagram diberi
+jeda `REQUEST_DELAY_SECONDS` (bawaan 2 detik, di `.env`) dikali angka acak
+0,8–1,3, supaya polanya tidak kaku. X memakai jeda yang sama sesudah setiap
+permintaan yang berhasil.
+
+**Kegagalan.** Library TikTok dan Instagram sudah mencoba ulang sendiri
+3 kali dengan jeda yang makin panjang (2 detik dikali nomor percobaan). Kalau
+masih gagal, scraper kita **tidak berhenti**: halaman atau unggahan itu
+dilewati, error dicatat di log dan di `errors` pada manifest, lalu lanjut ke
+sumber berikutnya. Run baru berhenti dengan status `failed` kalau ada error
+tak terduga, misalnya bug atau konfigurasi salah.
+
+**Melanjutkan run yang terputus.** ID yang sudah tersimpan dicatat di
+`data/raw/_seen_<platform>.txt`. Kalau run berhenti (Ctrl+C, internet putus,
+laptop mati), jalankan perintah yang sama lagi; item yang sudah ada dilewati
+dan dihitung sebagai `duplicates`. Permintaan ke platform tetap dilakukan
+ulang, jadi untuk X, post yang dibaca ulang **tetap ditagih**.
+
+**Keluaran tiap run:**
+
+| Lokasi | Isi |
+|---|---|
+| `data/raw/<run_id>/` | Respons asli tiap halaman, dikompresi (`.json.gz`). Memuat username asli, jangan pernah di-commit |
+| `data/interim/<run_id>/batch_*.jsonl` | Record skema terpadu, satu per baris |
+| `data/interim/<run_id>/manifest.json` | Parameter run, salinan `keywords.yaml`, statistik, versi kode |
+| `logs/<run_id>.log` | Log lengkap run |
+
+**Arti angka di `counts` pada manifest:**
+
+| Kunci | Arti |
+|---|---|
+| `written` | Record yang tersimpan |
+| `written_post`, `written_comment`, `written_reply`, `written_quote` | Rincian `written` per `item_type` |
+| `duplicates` | Dilewati karena sudah pernah diambil |
+| `errors` | Permintaan yang gagal setelah dicoba ulang |
+| `out_of_period` | Video/unggahan yang dibuang karena di luar rentang waktu |
+| `videos_seen`, `posts_seen` | Video/unggahan yang dilihat sebelum disaring (TikTok, Instagram) |
+| `posts_read` | Post yang dibaca dari API, yaitu yang ditagih (X) |
+| `budget_exhausted` | `X_MAX_POSTS_READ` habis (X) |
+| `comment_page_cap_reached` | Unggahan yang komentarnya terpotong oleh `--comment-pages` (Instagram) |
+| `private_accounts_skipped` | Akun privat yang dilewati (Instagram) |
+| `raw_pages` | Jumlah respons mentah yang disimpan |
+
+## Perintah
+
+Semua perintah dijalankan dari folder repo (`cd ~/tk2-social-media-pipeline`).
+
+**Persiapan (sekali saja):**
+
+```bash
+make setup
+```
+
+Lalu isi `.env`: `X_BEARER_TOKEN`, `PSEUDONYM_SALT`, dan bila perlu
+`X_MAX_POSTS_READ`.
+
+**Cek kesiapan tanpa mengambil data:**
+
+```bash
+.venv/bin/python -m src.run_scrape --platform x --dry-run
+```
+
+Ganti `x` dengan `tiktok` atau `instagram`. Perintah ini memeriksa
+kredensial (tanpa menampilkan isinya), library yang dibutuhkan, dan rentang
+waktu yang akan dipakai. Yang diharapkan: baris terakhir `Dry-run lolos.`
+
+**Tes unit (tanpa jaringan, tanpa biaya):**
+
+```bash
+make test
+```
+
+**Uji kecil:**
+
+```bash
+.venv/bin/python -m src.run_scrape --platform tiktok --limit 20
+```
+
+`--limit` menghentikan run setelah sekian record tersimpan. Untuk X, uji kecil
+tetap berbayar; pasang batas baca rendah dulu, misalnya `X_MAX_POSTS_READ=60`
+di `.env`.
+
+**Run penuh** (angka hanya contoh, sesuaikan dengan target C1):
+
+```bash
+.venv/bin/python -m src.run_scrape --platform x --window peristiwa
+```
+
+```bash
+.venv/bin/python -m src.run_scrape --platform tiktok --max-pages 10 --comment-pages 5
+```
+
+```bash
+.venv/bin/python -m src.run_scrape --platform instagram --comment-pages 20
+```
+
+**Semua opsi `run_scrape`:**
+
+| Opsi | Bawaan | Fungsi |
+|---|---|---|
+| `--platform` | (wajib) | `x`, `tiktok`, atau `instagram` |
+| `--dry-run` | mati | Cek kesiapan saja |
+| `--limit N` | tanpa batas | Berhenti setelah N record tersimpan |
+| `--max-pages N` | 5 | Halaman hasil per kueri/hashtag/akun (X: per rentang waktu) |
+| `--comment-pages N` | 10 | Halaman komentar per unggahan (TikTok, Instagram) |
+| `--with-accounts` | mati | Ikut ambil dari `akun_target` (TikTok, Instagram) |
+| `--window` | `periode` | `periode` atau `peristiwa` |
+| `--batch-size N` | 500 | Jumlah record per berkas `batch_*.jsonl` |
+
+Semua nilai opsi tercatat di `manifest.json` bagian `params`.
+
+**Rekap semua run** (bahan angka C1, C4, C5):
+
+```bash
+make stats
+```
+
+**Cuplikan teranonimisasi untuk bukti** (`data/sample/` dan `docs/evidence/`):
+
+```bash
+.venv/bin/python -m src.make_sample data/interim/<run_id>
+```
+
+Cuplikan menyamarkan @mention di teks, memotong teks menjadi 80 karakter, dan
+mengosongkan `url`. Opsi `--rows` (bawaan 30) dan `--max-chars` (bawaan 80)
+bisa diubah.
+
+## Belum diuji
+
+- `--window peristiwa` ke API X sungguhan (baru diuji dengan tes unit).
+- `--with-accounts` untuk TikTok dan Instagram dengan akun sungguhan, karena
+  `akun_target` masih kosong.
+- Run panjang (ratusan permintaan beruntun). Batas sebelum diblokir TikTok
+  atau Instagram belum diketahui.

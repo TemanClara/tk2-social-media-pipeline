@@ -1,0 +1,9 @@
+2026-10-15 19:58:49,678 | INFO    | Mulai run x_20261015_195849
+2026-10-15 19:58:49,704 | INFO    | Menulis ke data/interim/x_20261015_195849/batch_0001.jsonl
+2026-10-15 19:58:49,704 | INFO    | X: kueri ("Teddy Indra Wijaya" OR "Mayor Teddy" OR "Letkol Teddy" OR "Seskab Teddy" OR #mayorteddy) -is:retweet lang:id
+2026-10-15 19:58:49,704 | INFO    | X: 1 rentang waktu, batas baca 60 post
+2026-10-15 19:58:49,704 | INFO    | X: mencari 2024-10-01 s/d 2026-10-01
+2026-10-15 19:59:00,189 | INFO    | Batas 20 record tercapai.
+2026-10-15 19:59:00,190 | INFO    | Selesai. 20 record tersimpan, 1 duplikat dilewati.
+2026-10-15 19:59:00,191 | INFO    | Statistik: {'fetched': 21, 'written': 20, 'duplicates': 1, 'errors': 0, 'written_reply': 13, 'written_quote': 5, 'written_post': 2, 'posts_read': 30, 'raw_pages': 4}
+2026-10-15 19:59:00,191 | INFO    | Manifest run disimpan di data/interim/x_20261015_195849/manifest.json
