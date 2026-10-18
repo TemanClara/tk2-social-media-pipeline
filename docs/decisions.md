@@ -63,7 +63,11 @@ setelah diambil dan dihitung sebagai `out_of_period` di manifest.
 - Bila tetap gagal: halaman atau unggahan itu dilewati, error dicatat di log
   dan di `counts.errors` manifest, run lanjut ke sumber berikutnya. Run
   berstatus `failed` hanya untuk error tak terduga.
-- Pengaman biaya X: `X_MAX_POSTS_READ` (bawaan 2.000 post per run).
+- Pengaman biaya X: `X_MAX_POSTS_READ` (bawaan 2.000 post per run). Dengan
+  `--x-budget rata` (bawaan), jatah dibagi rata ke tiap rentang waktu dan sisa
+  yang tak terpakai ikut ke rentang berikutnya, sehingga dengan
+  `--window peristiwa` tiap peristiwa pasti kebagian. Pemakaian per rentang
+  tercatat sebagai `posts_read_<tanggal>` di manifest.
 - Cara melanjutkan run yang terputus: berkas `_seen_<platform>.txt` di
   `data/raw/`. ID yang sudah tersimpan dilewati saat ditulis, tetapi halaman
   tetap diminta ulang (untuk X tetap ditagih).
@@ -87,7 +91,7 @@ mengakali halaman anti-bot.
 - [ ] Pengumpulan penuh dua tahun atau sampel per jendela peristiwa (keputusan CP1). Kode mendukung keduanya (`--window`).
 - [ ] Tafsiran `jendela_hari`: sesudah tanggal peristiwa (implementasi sekarang) atau di sekitarnya
 - [ ] Target volume per platform (dari C1), dan unit hitung TikTok/Instagram: unggahan atau komentar
-- [ ] Perlakuan konten non-Indonesia. X memakai `lang:id`; TikTok dan Instagram belum disaring bahasa
+- [ ] Perlakuan konten non-Indonesia. X memakai `lang:id`; TikTok dan Instagram belum disaring, tetapi TikTok kini menyimpan `language`
 - [ ] Bias urutan: `--x-sort relevancy` dan `--tiktok-sort likes` mengutamakan konten populer; perlu dicatat di C3
-- [ ] Penyamaran @username di dalam teks (C4/C6)
-- [ ] Batas baca X belum dibagi per peristiwa saat `--window peristiwa`
+- [ ] Penyamaran @username di dalam teks (C4/C6): opsi `--mask-mentions` sudah tersedia, tinggal diputuskan dipakai atau tidak
+- [ ] Penyaringan bahasa: kolom `language` tersedia untuk X dan TikTok; Instagram tidak menyediakan kode bahasa

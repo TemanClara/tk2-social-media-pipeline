@@ -187,6 +187,8 @@ class TikTokScraper(ScraperRuntime, BaseScraper):
             like_count=stats.get("like_count"),
             reply_count=stats.get("comment_count"),
             share_count=stats.get("share_count"),
+            view_count=stats.get("play_count"),
+            language=video.get("language"),
             # tanpa username: link asli TikTok berbentuk /@<username>/video/<id>
             url=f"https://www.tiktok.com/@/video/{video['id']}",
             query=query,
@@ -205,6 +207,7 @@ class TikTokScraper(ScraperRuntime, BaseScraper):
             like_count=comment.get("like_count"),
             reply_count=comment.get("reply_count"),
             share_count=None,
+            language=comment.get("language"),
             url=comment.get("link"),
             query=query,
         )

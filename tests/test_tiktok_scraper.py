@@ -51,6 +51,23 @@ class TikTokScraperTest(unittest.TestCase):
         self.assertEqual(post["reply_count"], 2)
         self.assertEqual(post["share_count"], 3)
 
+    def test_view_count_language_and_hashtags(self):
+        v = dict(video("v1"), description="Keren #MayorTeddy #fyp", language="id")
+        v["stats"] = dict(v["stats"], play_count=999)
+        lib = library(search=pages({"videos": [v]}),
+                      comments=pages({"comments": [dict(comment("c1"), language="en")]}))
+        scraper, _ = make(TikTokScraper, library=lib)
+        post, top = list(scraper.collect())
+        self.assertEqual((post["view_count"], post["language"], post["hashtags"]), (999, "id", ["mayorteddy", "fyp"]))
+        self.assertEqual((top["view_count"], top["language"], top["hashtags"]), (None, "en", []))
+
+    def test_mask_mentions_option(self):
+        lib = library(search=pages({"videos": [video("v1", comments=1)]}),
+                      comments=pages({"comments": [dict(comment("c1"), text="@teman_asli lihat ini")]}))
+        scraper, _ = make(TikTokScraper, library=lib, options=RunOptions(mask_mentions=True))
+        records = list(scraper.collect())
+        self.assertEqual(records[1]["text"], f"@user_{hash_username('teman_asli')} lihat ini")
+
     def test_usernames_are_hashed_never_stored(self):
         lib = library(search=pages({"videos": [video("v1", user="Kreator.Asli")]}),
                       comments=pages({"comments": [comment("c1", user="penonton_asli")]}))

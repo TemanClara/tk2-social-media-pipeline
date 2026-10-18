@@ -77,13 +77,23 @@ dibuang sebagai duplikat.
 | Batas | Nilai | Diatur di |
 |---|---|---|
 | Total post dibaca per run | 2.000 | `X_MAX_POSTS_READ` di `.env` |
+| Pembagian jatah antar rentang waktu | `rata` | `--x-budget` |
 | Halaman pencarian per rentang | 5 (100 post per halaman) | `--max-pages` |
 | Balasan per percakapan | 100 | `MAX_REPLIES` di `x_scraper.py` |
 | Quote per post | 50 | `MAX_QUOTES` di `x_scraper.py` |
 | Ukuran halaman saat uji | mengikuti `--limit` (min. 10, maks. 100) | `--limit` |
 
-Begitu `X_MAX_POSTS_READ` habis, scraper berhenti meminta data dan mencatat
-`budget_exhausted` di manifest. Parameter `expansions` sengaja tidak dipakai
+**Pembagian jatah (`--x-budget`).** Rentang waktu diproses berurutan.
+Dengan `rata` (bawaan), sisa jatah dibagi rata ke rentang yang belum
+diproses: dengan 2.000 post dan tiga peristiwa, peristiwa pertama mendapat
+666, dan bila hanya terpakai 100, dua peristiwa berikutnya berbagi 1.900.
+Dengan `bersama`, satu jatah dipakai berurutan, sehingga peristiwa pertama
+yang ramai bisa menghabiskannya. Untuk `--window periode` (satu rentang)
+kedua pilihan sama saja. Pemakaian tiap rentang tercatat sebagai
+`posts_read_<tanggal awal>` di manifest.
+
+Begitu jatah sebuah rentang habis, scraper berhenti meminta data untuk
+rentang itu dan mencatat `budget_exhausted` di manifest. Parameter `expansions` sengaja tidak dipakai
 supaya objek pengguna tidak ikut ditagih.
 
 Dengan `--x-sort recency`, run `--window periode` dan batas 2.000 post
@@ -101,6 +111,8 @@ dicatat di C3.
 | `parent_id` | ID post yang dibalas atau dikutip; kosong untuk post biasa |
 | `conversation_id` | Dari X. Untuk `reply`: ID post paling atas di utasnya. Untuk `quote`: ID quote itu sendiri, karena quote memulai percakapan baru (hubungannya ke post yang dikutip lewat `parent_id`) |
 | `share_count` | `retweet_count` |
+| `view_count` | `impression_count` (belum diverifikasi di data nyata) |
+| `language` | `lang` dari X (kode yang dipakai belum diverifikasi di data nyata) |
 | `query` | Kata kunci/hashtag yang muncul di teks, mis. `Mayor Teddy; #mayorteddy`. Balasan dan quote mewarisi `query` post induknya |
 | `url` | `https://x.com/i/status/<id>` (tanpa username) |
 
@@ -165,6 +177,8 @@ Indonesia dijawab dengan halaman anti-bot. Scraper menggantinya dengan
 | `conversation_id` | ID video | ID video |
 | `reply_count` | jumlah komentar | jumlah balasan |
 | `share_count` | jumlah share | kosong |
+| `view_count` | jumlah putar video | kosong |
+| `language` | deteksi bahasa TikTok untuk caption | deteksi bahasa TikTok untuk komentar (bisa keliru untuk teks pendek; di uji 18 Okt muncul `tr` dan `tl` di antara 38 `id`) |
 | `url` | `https://www.tiktok.com/@/video/<id>` | tautan komentar |
 | `query` | mis. `kata_kunci:Mayor Teddy` | sama dengan videonya |
 
@@ -209,9 +223,11 @@ Untuk tiap unggahan:
   memberi 20. Penyebabnya belum diketahui.
 - Kolom `reply_count` pada komentar umumnya kosong.
 
-**Pemetaan kolom:** sama seperti TikTok, dengan dua perbedaan. `share_count`
-selalu kosong karena Instagram tidak menyediakannya, dan `url` komentar
-berbentuk `https://www.instagram.com/p/<kode>/c/<id komentar>/`.
+**Pemetaan kolom:** sama seperti TikTok, dengan beberapa perbedaan.
+`view_count` berisi jumlah putar reel (diambil dari hasil pencarian bila
+detail unggahan tidak memuatnya), `language` selalu kosong karena Instagram
+tidak menyediakan kode bahasa, dan `share_count` juga selalu kosong. `url`
+komentar berbentuk `https://www.instagram.com/p/<kode>/c/<id komentar>/`.
 
 ## Perilaku bersama
 
@@ -219,6 +235,19 @@ berbentuk `https://www.instagram.com/p/<kode>/c/<id komentar>/`.
 jeda `REQUEST_DELAY_SECONDS` (bawaan 2 detik, di `.env`) dikali angka acak
 0,8–1,3, supaya polanya tidak kaku. X memakai jeda yang sama sesudah setiap
 permintaan yang berhasil.
+
+**Hashtag.** Kolom `hashtags` diisi dari teks (`text`) dengan pola yang
+sama di ketiga platform: huruf kecil, tanpa `#`, tanpa duplikat, urutan
+kemunculan. Contoh: caption `Keren #MayorTeddy #fyp` menjadi
+`["mayorteddy", "fyp"]`.
+
+**Menyamarkan @username di teks (`--mask-mentions`).** Bawaannya mati. Bila
+dinyalakan, tiap @username di `text` diganti `@user_<hash>`, dengan hash yang
+sama seperti `author_hash` (SHA-256 bergaram). Akibatnya akun yang sama
+selalu menjadi token yang sama, dan di TikTok/Instagram token itu cocok
+dengan `author_hash` akun tersebut. Di X tidak cocok, karena `author_hash` X
+dibuat dari ID akun, bukan username. Alamat email tidak ikut disamarkan.
+Kolom `hashtags` diambil sebelum penyamaran, jadi tidak terpengaruh.
 
 **Kegagalan.** Library TikTok dan Instagram sudah mencoba ulang sendiri
 3 kali dengan jeda yang makin panjang (2 detik dikali nomor percobaan). Kalau
@@ -253,7 +282,8 @@ ulang, jadi untuk X, post yang dibaca ulang **tetap ditagih**.
 | `out_of_period` | Video/unggahan yang dibuang karena di luar rentang waktu |
 | `videos_seen`, `posts_seen` | Video/unggahan yang dilihat sebelum disaring (TikTok, Instagram) |
 | `posts_read` | Post yang dibaca dari API, yaitu yang ditagih (X) |
-| `budget_exhausted` | `X_MAX_POSTS_READ` habis (X) |
+| `budget_exhausted` | Jatah baca sebuah rentang habis (X) |
+| `posts_read_<tanggal>` | Post yang dibaca di rentang yang dimulai tanggal itu (X) |
 | `comment_page_cap_reached` | Unggahan yang komentarnya terpotong oleh `--comment-pages` (Instagram) |
 | `reply_page_cap_reached` | Komentar yang balasannya terpotong oleh `--tiktok-replies` (TikTok) |
 | `private_accounts_skipped` | Akun privat yang dilewati (Instagram) |
@@ -326,6 +356,8 @@ di `.env`.
 | `--x-sort` | `relevancy` | Urutan pencarian X: `relevancy` atau `recency` |
 | `--tiktok-sort` | `likes` | Urutan pencarian kata kunci TikTok: `likes` atau `relevance` |
 | `--tiktok-replies N` | 0 | Halaman balasan per komentar TikTok; 0 = tidak diambil |
+| `--x-budget` | `rata` | Pembagian `X_MAX_POSTS_READ` antar rentang: `rata` atau `bersama` |
+| `--mask-mentions` | mati | Samarkan @username di dalam teks menjadi `@user_<hash>` |
 | `--batch-size N` | 500 | Jumlah record per berkas `batch_*.jsonl` |
 
 Semua nilai opsi tercatat di `manifest.json` bagian `params`.
@@ -349,6 +381,12 @@ bisa diubah.
 ## Belum diuji
 
 - `--window peristiwa` ke API X sungguhan (baru diuji dengan tes unit).
+- `--x-budget rata` ke API X sungguhan (baru diuji dengan tes unit).
+- Kolom `view_count` (`impression_count`) dan `language` (`lang`) untuk X:
+  belum ada run X sejak kolom ini ditambahkan, jadi isi dan kode bahasanya
+  belum dilihat di data nyata.
+- `--mask-mentions` pada data nyata: uji 18 Okt (80 record TikTok dan
+  Instagram) kebetulan tidak memuat @username; perilakunya diuji dengan tes unit.
 - `--x-sort relevancy` lewat scraper secara utuh. Yang sudah diuji baru satu
   permintaan pencarian langsung (20 post); pengiriman parameternya oleh
   scraper diuji dengan tes unit.

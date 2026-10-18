@@ -30,6 +30,9 @@ Catatan untuk run 15 Okt 2026:
 - Cuplikan disamarkan lebih jauh dari dataset: @mention di teks diganti
   `@[pengguna]`, teks dipotong 80 karakter, kolom `url` dikosongkan. Aturan
   ini perlu dikonfirmasi bersama C6.
+- Cuplikan 15 Okt dibuat sebelum kolom `view_count`, `hashtags`, dan
+  `language` ditambahkan (18 Okt), jadi kolom itu belum ada di
+  `data/sample/`. Buat ulang cuplikan dari run penuh dengan `src.make_sample`.
 - Run 15 Okt dijalankan **sebelum** ada opsi `--x-sort` dan `--tiktok-sort`
   (ditambahkan 18 Okt). Saat itu X memakai urutan terbaru (setara
   `--x-sort recency`) dan TikTok urutan relevan (setara

@@ -95,6 +95,15 @@ class InstagramScraperTest(unittest.TestCase):
         self.assertEqual(keyword.calls, [("mayor teddy", None)])
         self.assertEqual(records[0]["query"], "kata_kunci:Mayor Teddy")
 
+    def test_view_count_kept_from_search_when_details_lack_it(self):
+        lib = library(keyword=pages({"posts": [search_post("A")]}),
+                      details=lambda code: dict(full_post(code, comments=0), caption="halo #TeddyIndraWijaya"))
+        scraper, _ = make(InstagramScraper, library=lib)
+        post = list(scraper.collect())[0]
+        self.assertEqual(post["view_count"], 100)  # play_count dari hasil pencarian
+        self.assertEqual(post["hashtags"], ["teddyindrawijaya"])
+        self.assertIsNone(post["language"])
+
     def test_private_account_is_skipped(self):
         user = pages({"posts": [], "is_private": True})
         scraper, _ = make(InstagramScraper, library=library(user=user),

@@ -122,6 +122,73 @@ class XScraperTest(unittest.TestCase):
         self.run_scraper(session, options=RunOptions(x_sort="recency"))
         self.assertEqual(session.calls[0][1]["sort_order"], "recency")
 
+    def three_windows_session(self):
+        """Peristiwa pertama sangat ramai (selalu ada halaman berikutnya), dua lainnya sepi."""
+        def search(url, params):
+            size = int(params["max_results"])
+            if params["start_time"].startswith("2024-10-20"):
+                n = int(params.get("next_token", "0"))
+                return {"data": [tweet(f"a{n}-{i}") for i in range(size)], "meta": {"next_token": str(n + 1)}}
+            prefix = params["start_time"][:7]
+            return {"data": [tweet(f"{prefix}-{i}") for i in range(5)], "meta": {}}
+        return FakeSession([(is_search, search)])
+
+    def keywords_with_three_events(self):
+        return {**KEYWORDS, "peristiwa_pemicu": [
+            {"nama": "a", "tanggal": "2024-10-20", "jendela_hari": 14},
+            {"nama": "b", "tanggal": "2025-02-25", "jendela_hari": 14},
+            {"nama": "c", "tanggal": "2026-05-13", "jendela_hari": 14}]}
+
+    def test_budget_split_evenly_gives_every_event_a_share(self):
+        with mock.patch.dict(os.environ, {"X_MAX_POSTS_READ": "300"}):
+            session = self.three_windows_session()
+            scraper, _ = make(XScraper, session=session,
+                              options=RunOptions(window="peristiwa", max_pages=50, x_budget="rata"))
+            scraper.keywords = self.keywords_with_three_events()
+            records = list(scraper.collect())
+        months = [r["item_id"][:7] for r in records if not r["item_id"].startswith("a")]
+        self.assertEqual(sorted(set(months)), ["2025-02", "2026-05"])
+        self.assertEqual(scraper.stats["posts_read_2024-10-20"], 100)
+        self.assertEqual(scraper.stats["posts_read_2025-02-25"], 5)
+        self.assertEqual(scraper.stats["posts_read_2026-05-13"], 5)
+
+    def test_unused_share_rolls_over_to_later_events(self):
+        with mock.patch.dict(os.environ, {"X_MAX_POSTS_READ": "300"}):
+            session = self.three_windows_session()
+            scraper, _ = make(XScraper, session=session,
+                              options=RunOptions(window="peristiwa", max_pages=50, x_budget="rata"))
+            scraper.keywords = {**self.keywords_with_three_events(), "peristiwa_pemicu": list(reversed(
+                self.keywords_with_three_events()["peristiwa_pemicu"]))}
+            list(scraper.collect())
+        # dua peristiwa sepi dulu (5 + 5), sisanya (290) untuk peristiwa ramai
+        self.assertEqual(scraper.stats["posts_read_2024-10-20"], 290)
+
+    def test_shared_budget_lets_first_event_take_everything(self):
+        with mock.patch.dict(os.environ, {"X_MAX_POSTS_READ": "300"}):
+            session = self.three_windows_session()
+            scraper, _ = make(XScraper, session=session,
+                              options=RunOptions(window="peristiwa", max_pages=50, x_budget="bersama"))
+            scraper.keywords = self.keywords_with_three_events()
+            records = list(scraper.collect())
+        self.assertTrue(all(r["item_id"].startswith("a") for r in records))
+        self.assertEqual(scraper.stats["posts_read_2024-10-20"], 300)
+
+    def test_new_columns_and_mention_masking(self):
+        post = tweet("1", text="@akun_asli Mayor Teddy #MayorTeddy #fyp")
+        post["public_metrics"]["impression_count"] = 1234
+        post["lang"] = "in"
+        session = FakeSession([(is_search, {"data": [post], "meta": {}})])
+        _, _, plain = self.run_scraper(session)
+        self.assertEqual(plain[0]["view_count"], 1234)
+        self.assertEqual(plain[0]["language"], "in")
+        self.assertEqual(plain[0]["hashtags"], ["mayorteddy", "fyp"])
+        self.assertIn("@akun_asli", plain[0]["text"])
+
+        session = FakeSession([(is_search, {"data": [post], "meta": {}})])
+        _, _, masked = self.run_scraper(session, options=RunOptions(mask_mentions=True))
+        self.assertNotIn("akun_asli", masked[0]["text"])
+        self.assertIn(f"@user_{hash_username('akun_asli')}", masked[0]["text"])
+
     def test_event_windows_make_one_search_per_event(self):
         session = FakeSession([(is_search, {"data": [], "meta": {}})])
         self.run_scraper(session, options=RunOptions(window="peristiwa"))

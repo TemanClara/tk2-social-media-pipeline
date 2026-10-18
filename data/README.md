@@ -27,11 +27,14 @@ Berlaku sama di ketiga platform. Sumbernya `UNIFIED_FIELDS` di
 | `parent_id` | teks | ID unggahan atau komentar induk | Kosong bila unggahan utama |
 | `conversation_id` | teks | ID unggahan paling atas di percakapan itu | Di X, `quote` punya `conversation_id` sendiri; wajib ada di X untuk RQ3 |
 | `author_hash` | teks | Username yang sudah dipseudonimkan | Hash SHA-256 bergaram, lihat C6 |
-| `text` | teks | Isi unggahan atau komentar | |
+| `text` | teks | Isi unggahan atau komentar | Dengan `--mask-mentions`, tiap @username diganti `@user_<hash>` |
 | `created_at` | ISO 8601 | Waktu unggah | |
 | `like_count` | angka | Jumlah suka | Kosong bila platform tidak menyediakan |
 | `reply_count` | angka | Jumlah tanggapan langsung | Pada `post` TikTok/Instagram: jumlah komentar. Pada `comment`: jumlah balasan. Pada X: jumlah reply |
-| `share_count` | angka | Jumlah bagikan | |
+| `share_count` | angka | Jumlah bagikan | X: `retweet_count`; kosong untuk Instagram dan komentar |
+| `view_count` | angka | Jumlah tayang/putar | X: `impression_count` (belum diverifikasi di data nyata); TikTok: jumlah putar video; Instagram: jumlah putar reel. Kosong untuk komentar dan balasan |
+| `hashtags` | daftar teks | Hashtag yang muncul di `text`, huruf kecil tanpa `#`, tanpa duplikat | Diambil dari teks dengan pola yang sama di ketiga platform; daftar kosong bila tidak ada |
+| `language` | teks | Kode bahasa yang diberikan platform | X: `lang` (kode yang dipakai X belum diverifikasi di data nyata); TikTok: deteksi otomatis TikTok, bisa keliru untuk komentar pendek; Instagram: selalu kosong |
 | `url` | teks | Tautan ke unggahan asli | |
 | `query` | teks | Kata kunci, hashtag, atau akun yang memunculkan record | Untuk menelusuri asal data |
 | `_scraped_at` | ISO 8601 | Waktu pengambilan | Ditambahkan otomatis |

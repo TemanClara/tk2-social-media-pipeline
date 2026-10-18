@@ -105,9 +105,11 @@ class InstagramScraper(ScraperRuntime, BaseScraper):
                     continue
                 if not post.get("published_at"):
                     # hasil pencarian belum memuat tanggal dan statistik
+                    searched = post
                     post = self._details(post)
                     if post is None:
                         continue
+                    _keep_play_count(post, searched)
                 if not in_ranges(post.get("published_at"), self.ranges):
                     self.stats["out_of_period"] += 1
                     created = parse_time(post.get("published_at"))
@@ -166,6 +168,7 @@ class InstagramScraper(ScraperRuntime, BaseScraper):
             like_count=stats.get("like_count"),
             reply_count=stats.get("comment_count"),
             share_count=None,
+            view_count=stats.get("play_count") or stats.get("view_count"),
             url=post.get("link"),
             query=query,
         )
@@ -186,6 +189,14 @@ class InstagramScraper(ScraperRuntime, BaseScraper):
             url=f"https://www.instagram.com/p/{post['code']}/c/{comment['id']}/",
             query=query,
         )
+
+
+def _keep_play_count(detail: dict, searched: dict) -> None:
+    """Hasil pencarian memuat jumlah putar reel, detail kadang tidak."""
+    stats = detail.setdefault("stats", {}) or {}
+    if stats.get("play_count") is None:
+        stats["play_count"] = (searched.get("stats") or {}).get("play_count")
+    detail["stats"] = stats
 
 
 def _hash(username: str | None) -> str | None:

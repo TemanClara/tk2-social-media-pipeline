@@ -106,6 +106,8 @@ Pilihan perintah:
 | `--x-sort` | `relevancy` | urutan pencarian X: `relevancy` (paling relevan) atau `recency` (terbaru) |
 | `--tiktok-sort` | `likes` | urutan pencarian kata kunci TikTok: `likes` (paling banyak like) atau `relevance` |
 | `--tiktok-replies N` | 0 | halaman balasan per komentar TikTok; 0 = balasan tidak diambil |
+| `--x-budget` | `rata` | pembagian `X_MAX_POSTS_READ` antar rentang waktu: `rata` (dibagi per rentang) atau `bersama` (dipakai berurutan) |
+| `--mask-mentions` | mati | samarkan @username di dalam teks menjadi `@user_<hash>` |
 | `--batch-size N` | 500 | jumlah record per berkas keluaran |
 
 Nilai yang dipakai tercatat di `manifest.json` tiap run. Penjelasan cara kerja
@@ -136,6 +138,9 @@ di ketiga platform:
 | `text` | isi teks |
 | `created_at` | waktu unggah (ISO 8601) |
 | `like_count`, `reply_count`, `share_count` | metrik interaksi |
+| `view_count` | jumlah tayang/putar (unggahan saja) |
+| `hashtags` | daftar hashtag di teks, huruf kecil tanpa `#` |
+| `language` | kode bahasa dari platform (X, TikTok; kosong untuk Instagram) |
 | `url` | tautan ke unggahan asli |
 | `query` | kata kunci, hashtag, atau akun yang memunculkan record ini |
 
