@@ -110,6 +110,18 @@ class XScraperTest(unittest.TestCase):
         self.assertNotIn("expansions", params)
         self.assertIn("conversation_id", params["tweet.fields"])
 
+    def test_search_sort_defaults_to_relevancy_and_follows_option(self):
+        session = FakeSession([(is_search, {"data": [tweet("1", replies=1)], "meta": {}})])
+        self.run_scraper(session, options=RunOptions())
+        search = [p for u, p in session.calls if is_search(u, p)][0]
+        replies = [p for u, p in session.calls if is_replies(u, p)][0]
+        self.assertEqual(search["sort_order"], "relevancy")
+        self.assertNotIn("sort_order", replies)  # balasan pakai urutan bawaan X
+
+        session = FakeSession([(is_search, {"data": [], "meta": {}})])
+        self.run_scraper(session, options=RunOptions(x_sort="recency"))
+        self.assertEqual(session.calls[0][1]["sort_order"], "recency")
+
     def test_event_windows_make_one_search_per_event(self):
         session = FakeSession([(is_search, {"data": [], "meta": {}})])
         self.run_scraper(session, options=RunOptions(window="peristiwa"))

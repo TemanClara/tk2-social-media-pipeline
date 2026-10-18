@@ -12,9 +12,13 @@ Developer Console di .env sebagai X_BEARER_TOKEN).
        Satu kueri gabungan per rentang waktu:
        ("Teddy Indra Wijaya" OR "Mayor Teddy" OR ... OR #mayorteddy) -is:retweet lang:id
        Retweet dibuang karena teksnya terpotong dan metriknya milik post asli.
+       Urutan diatur --x-sort: "relevancy" (bawaan) menyebar hasil di sepanjang
+       rentang; "recency" mengambil yang terbaru dulu, sehingga dengan batas
+       baca hasilnya menumpuk di akhir rentang (diuji 18 Okt 2026).
     2. Balasan tiap percakapan  GET /2/tweets/search/all
        dengan kueri conversation_id:<id> -is:retweet, start_time = waktu post.
-       Hanya untuk post yang reply_count > 0.
+       Hanya untuk post yang reply_count > 0. Memakai urutan bawaan X, tidak
+       mengikuti --x-sort.
     3. Quote-tweet  GET /2/tweets/:id/quote_tweets
        Hanya untuk post yang quote_count > 0.
 
@@ -95,11 +99,13 @@ class XScraper(ScraperRuntime, BaseScraper):
         query = build_query(self.keywords)
         ranges = date_ranges(self.keywords, self.options.window)
         self.logger.info("X: kueri %s", query)
-        self.logger.info("X: %d rentang waktu, batas baca %d post", len(ranges), self.budget)
+        self.logger.info("X: %d rentang waktu, batas baca %d post, urutan %s",
+                         len(ranges), self.budget, self.options.x_sort)
 
         for start, end in ranges:
             self.logger.info("X: mencari %s s/d %s", start.date(), end.date())
-            params = {"query": query, "start_time": _rfc3339(start), "end_time": _rfc3339(end)}
+            params = {"query": query, "start_time": _rfc3339(start), "end_time": _rfc3339(end),
+                      "sort_order": self.options.x_sort}
             for post in self._paged("/tweets/search/all", params, label="x_search",
                                     max_pages=self.options.max_pages, max_items=None):
                 terms = matched_terms(self._text(post), self.keywords)

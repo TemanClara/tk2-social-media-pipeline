@@ -19,6 +19,13 @@ class RunOptions:
     comment_pages: int = 10     # halaman komentar per unggahan
     with_accounts: bool = False # ikut ambil dari akun_target (TikTok/Instagram)
     window: str = "periode"     # "periode" | "peristiwa"
+    x_sort: str = "relevancy"   # urutan pencarian X: "relevancy" | "recency"
+    tiktok_sort: str = "likes"  # urutan pencarian kata kunci TikTok: "likes" | "relevance"
+    tiktok_replies: int = 0     # halaman balasan per komentar TikTok; 0 = tidak diambil
+
+
+X_SORTS = ("relevancy", "recency")
+TIKTOK_SORTS = ("likes", "relevance")
 
 
 def _parse_day(value) -> date:

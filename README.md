@@ -94,12 +94,23 @@ python -m src.run_scrape --platform x --limit 50
 
 Pilihan perintah:
 
-| Argumen | Arti |
-|---|---|
-| `--platform` | `x`, `tiktok`, atau `instagram` |
-| `--limit` | batas jumlah record, berguna saat uji coba |
-| `--batch-size` | jumlah record per berkas keluaran (bawaan 500) |
-| `--dry-run` | periksa konfigurasi dan folder tanpa menyentuh jaringan |
+| Argumen | Bawaan | Arti |
+|---|---|---|
+| `--platform` | (wajib) | `x`, `tiktok`, atau `instagram` |
+| `--dry-run` | mati | periksa konfigurasi, kredensial, dan folder tanpa menyentuh jaringan |
+| `--limit N` | tanpa batas | berhenti setelah N record tersimpan, berguna saat uji coba |
+| `--max-pages N` | 5 | halaman hasil per kata kunci/hashtag/akun (X: per rentang waktu) |
+| `--comment-pages N` | 10 | halaman komentar per unggahan (TikTok, Instagram) |
+| `--with-accounts` | mati | ikut ambil unggahan dari `akun_target` (TikTok, Instagram) |
+| `--window` | `periode` | `periode` (seluruh periode) atau `peristiwa` (jendela per `peristiwa_pemicu`) |
+| `--x-sort` | `relevancy` | urutan pencarian X: `relevancy` (paling relevan) atau `recency` (terbaru) |
+| `--tiktok-sort` | `likes` | urutan pencarian kata kunci TikTok: `likes` (paling banyak like) atau `relevance` |
+| `--tiktok-replies N` | 0 | halaman balasan per komentar TikTok; 0 = balasan tidak diambil |
+| `--batch-size N` | 500 | jumlah record per berkas keluaran |
+
+Nilai yang dipakai tercatat di `manifest.json` tiap run. Penjelasan cara kerja
+tiap scraper, pengaruh tiap opsi, dan hasil uji cobanya ada di
+[`docs/scrapers.md`](docs/scrapers.md).
 
 ## Keluaran
 

@@ -46,13 +46,16 @@ def make(scraper_cls, options=None, **kwargs):
 def pages(*page_list):
     """Fungsi tiruan berhalaman: cursor None -> halaman 1, "2" -> halaman 2, dst."""
     calls = []
+    kwargs_seen = []
 
-    def fetch(value, cursor):
+    def fetch(value, cursor, **kwargs):
         calls.append((value, cursor))
+        kwargs_seen.append(kwargs)
         index = int(cursor) - 1 if cursor else 0
         items = page_list[index]
         has_more = index + 1 < len(page_list)
         return {**items, "next_cursor": str(index + 2) if has_more else None, "has_more": has_more}
 
     fetch.calls = calls
+    fetch.kwargs = kwargs_seen
     return fetch

@@ -30,14 +30,19 @@ Catatan untuk run 15 Okt 2026:
 - Cuplikan disamarkan lebih jauh dari dataset: @mention di teks diganti
   `@[pengguna]`, teks dipotong 80 karakter, kolom `url` dikosongkan. Aturan
   ini perlu dikonfirmasi bersama C6.
+- Run 15 Okt dijalankan **sebelum** ada opsi `--x-sort` dan `--tiktok-sort`
+  (ditambahkan 18 Okt). Saat itu X memakai urutan terbaru (setara
+  `--x-sort recency`) dan TikTok urutan relevan (setara
+  `--tiktok-sort relevance`). Bawaan sekarang berbeda: `relevancy` dan `likes`.
 - TikTok: 65 dari 67 video yang ditemukan berada di luar periode
   (kebanyakan diunggah setelah 30 Sep 2026), sehingga hanya 2 video yang
-  masuk. Lihat `out_of_period` di manifest.
-- X: field `note_tweet` diterima (teks post panjang utuh). Pencarian arsip
-  penuh mengembalikan post terbaru lebih dulu, sehingga semua post di run uji
-  bertanggal 30 Sep 2026 (hari terakhir periode). Dengan batas baca 2.000 post,
-  run penuh hanya akan mencakup minggu-minggu terakhir periode kecuali memakai
-  `--window peristiwa`.
+  masuk. Lihat `out_of_period` di manifest. Uji ulang 18 Okt dengan urutan
+  `likes` memberi 35 dan 40 video masuk periode dari ~60 per kata kunci
+  (lihat `docs/scrapers.md`).
+- X: field `note_tweet` diterima (teks post panjang utuh). Dengan urutan
+  terbaru, semua post di run uji bertanggal 30 Sep 2026 (hari terakhir
+  periode). Uji 18 Okt dengan `sort_order=relevancy` memberi 20 post yang
+  tersebar dari Nov 2024 sampai Jun 2026.
 
 ## Tangkapan layar yang perlu diambil
 

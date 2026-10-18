@@ -18,7 +18,7 @@ from src.common.config import Settings, keywords_path, load_keywords
 from src.common.logging_setup import new_run_id, setup_logging
 from src.common.manifest import RunManifest
 from src.common.storage import BatchWriter, RawArchive, SeenStore
-from src.scrapers._common import RunOptions, date_ranges
+from src.scrapers._common import TIKTOK_SORTS, X_SORTS, RunOptions, date_ranges
 from src.scrapers.instagram_scraper import InstagramScraper
 from src.scrapers.tiktok_scraper import TikTokScraper
 from src.scrapers.x_scraper import XScraper, build_query
@@ -54,6 +54,12 @@ def parse_args() -> argparse.Namespace:
                         help="Ikut ambil unggahan dari akun_target (TikTok/Instagram)")
     parser.add_argument("--window", choices=["periode", "peristiwa"], default=defaults.window,
                         help="Rentang waktu: seluruh periode, atau jendela per peristiwa_pemicu")
+    parser.add_argument("--x-sort", choices=X_SORTS, default=defaults.x_sort,
+                        help=f"Urutan pencarian X: relevancy (paling relevan) atau recency (terbaru). Bawaan {defaults.x_sort}")
+    parser.add_argument("--tiktok-sort", choices=TIKTOK_SORTS, default=defaults.tiktok_sort,
+                        help=f"Urutan pencarian kata kunci TikTok: likes (paling banyak like) atau relevance. Bawaan {defaults.tiktok_sort}")
+    parser.add_argument("--tiktok-replies", type=int, default=defaults.tiktok_replies,
+                        help="Halaman balasan per komentar TikTok (~20 balasan/halaman). Bawaan 0 = tidak diambil")
     parser.add_argument("--dry-run", action="store_true",
                         help="Periksa konfigurasi dan kredensial tanpa mengambil data")
     return parser.parse_args()
@@ -95,6 +101,11 @@ def dry_run(args, settings: Settings, keywords: dict, logger) -> int:
     logger.info("Jeda antar permintaan: %.1f detik | Retry maksimum: %d",
                 settings.request_delay_seconds, settings.max_retries)
     logger.info("Halaman per sumber: %d | Halaman komentar: %d", args.max_pages, args.comment_pages)
+    if platform == "x":
+        logger.info("Urutan pencarian X: %s", args.x_sort)
+    if platform == "tiktok":
+        logger.info("Urutan pencarian TikTok: %s | Halaman balasan per komentar: %d",
+                    args.tiktok_sort, args.tiktok_replies)
     for folder in (settings.raw_dir, settings.interim_dir, settings.processed_dir):
         folder.mkdir(parents=True, exist_ok=True)
     logger.info("Folder data siap di %s", settings.data_dir)
@@ -117,7 +128,9 @@ def main() -> int:
 
     logger.info("Mulai run %s", run_id)
     options = RunOptions(max_pages=args.max_pages, comment_pages=args.comment_pages,
-                         with_accounts=args.with_accounts, window=args.window)
+                         with_accounts=args.with_accounts, window=args.window,
+                         x_sort=args.x_sort, tiktok_sort=args.tiktok_sort,
+                         tiktok_replies=args.tiktok_replies)
 
     manifest = RunManifest(
         run_id=run_id,
@@ -125,6 +138,9 @@ def main() -> int:
         params={"limit": args.limit, "batch_size": args.batch_size,
                 "max_pages": options.max_pages, "comment_pages": options.comment_pages,
                 "with_accounts": options.with_accounts, "window": options.window,
+                **({"x_sort": options.x_sort} if args.platform == "x" else {}),
+                **({"tiktok_sort": options.tiktok_sort, "tiktok_replies": options.tiktok_replies}
+                   if args.platform == "tiktok" else {}),
                 "request_delay_seconds": settings.request_delay_seconds,
                 "max_retries": settings.max_retries},
         keywords_snapshot=keywords,
