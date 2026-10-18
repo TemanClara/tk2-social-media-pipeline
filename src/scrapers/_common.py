@@ -6,11 +6,25 @@ penghitung statistik untuk manifest, dan jeda antar permintaan.
 
 from __future__ import annotations
 
+import re
 from collections import Counter
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 
+from src.common.anonymize import mask_mentions
 from src.common.http import polite_sleep
+
+HASHTAG = re.compile(r"(?<![\w&])#(\w+)", re.UNICODE)
+
+
+def extract_hashtags(text: str | None) -> list[str]:
+    """Hashtag di teks, huruf kecil, tanpa '#', tanpa duplikat, urutan kemunculan."""
+    seen: list[str] = []
+    for tag in HASHTAG.findall(text or ""):
+        tag = tag.lower()
+        if tag not in seen:
+            seen.append(tag)
+    return seen
 
 
 @dataclass(frozen=True)
@@ -19,6 +33,16 @@ class RunOptions:
     comment_pages: int = 10     # halaman komentar per unggahan
     with_accounts: bool = False # ikut ambil dari akun_target (TikTok/Instagram)
     window: str = "periode"     # "periode" | "peristiwa"
+    x_sort: str = "relevancy"   # urutan pencarian X: "relevancy" | "recency"
+    tiktok_sort: str = "likes"  # urutan pencarian kata kunci TikTok: "likes" | "relevance"
+    tiktok_replies: int = 0     # halaman balasan per komentar TikTok; 0 = tidak diambil
+    x_budget: str = "rata"      # pembagian X_MAX_POSTS_READ antar rentang: "rata" | "bersama"
+    mask_mentions: bool = False # samarkan @username di dalam teks saat scraping
+
+
+X_SORTS = ("relevancy", "recency")
+X_BUDGETS = ("rata", "bersama")
+TIKTOK_SORTS = ("likes", "relevance")
 
 
 def _parse_day(value) -> date:
@@ -91,6 +115,15 @@ class ScraperRuntime:
 
     def pause(self) -> None:
         polite_sleep(self.settings.request_delay_seconds)
+
+    def to_unified(self, **kwargs) -> dict:
+        """Seperti BaseScraper.to_unified, ditambah --mask-mentions dan hashtag."""
+        record = super().to_unified(**kwargs)
+        if record.get("hashtags") is None:
+            record["hashtags"] = extract_hashtags(record.get("text"))
+        if self.options.mask_mentions:
+            record["text"] = mask_mentions(record.get("text"))
+        return record
 
     def fail(self, what: str, exc: Exception) -> None:
         """Catat kegagalan satu permintaan tanpa menghentikan run."""

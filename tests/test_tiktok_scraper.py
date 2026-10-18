@@ -24,10 +24,11 @@ def comment(cid, parent=None, user="penonton"):
             "link": f"https://www.tiktok.com/@/video/x?comment_id={cid}"}
 
 
-def library(search=None, hashtag=None, user=None, comments=None):
+def library(search=None, hashtag=None, user=None, comments=None, replies=None):
     empty = pages({"videos": []})
     return SimpleNamespace(search_videos=search or empty, hashtag_videos=hashtag or empty,
-                           user_videos=user or empty, comments=comments or pages({"comments": []}))
+                           user_videos=user or empty, comments=comments or pages({"comments": []}),
+                           replies=replies or (lambda video_id, comment_id, cursor: {"replies": []}))
 
 
 class TikTokScraperTest(unittest.TestCase):
@@ -49,6 +50,23 @@ class TikTokScraperTest(unittest.TestCase):
         self.assertEqual(reply["parent_id"], "c1")
         self.assertEqual(post["reply_count"], 2)
         self.assertEqual(post["share_count"], 3)
+
+    def test_view_count_language_and_hashtags(self):
+        v = dict(video("v1"), description="Keren #MayorTeddy #fyp", language="id")
+        v["stats"] = dict(v["stats"], play_count=999)
+        lib = library(search=pages({"videos": [v]}),
+                      comments=pages({"comments": [dict(comment("c1"), language="en")]}))
+        scraper, _ = make(TikTokScraper, library=lib)
+        post, top = list(scraper.collect())
+        self.assertEqual((post["view_count"], post["language"], post["hashtags"]), (999, "id", ["mayorteddy", "fyp"]))
+        self.assertEqual((top["view_count"], top["language"], top["hashtags"]), (None, "en", []))
+
+    def test_mask_mentions_option(self):
+        lib = library(search=pages({"videos": [video("v1", comments=1)]}),
+                      comments=pages({"comments": [dict(comment("c1"), text="@teman_asli lihat ini")]}))
+        scraper, _ = make(TikTokScraper, library=lib, options=RunOptions(mask_mentions=True))
+        records = list(scraper.collect())
+        self.assertEqual(records[1]["text"], f"@user_{hash_username('teman_asli')} lihat ini")
 
     def test_usernames_are_hashed_never_stored(self):
         lib = library(search=pages({"videos": [video("v1", user="Kreator.Asli")]}),
@@ -100,6 +118,66 @@ class TikTokScraperTest(unittest.TestCase):
         scraper, _ = make(TikTokScraper, library=lib)
         self.assertEqual([r["item_id"] for r in scraper.collect()], ["v2"])
         self.assertEqual(scraper.stats["errors"], 1)
+
+    def test_search_sort_defaults_to_likes_and_follows_option(self):
+        search = pages({"videos": []})
+        scraper, _ = make(TikTokScraper, library=library(search=search), options=RunOptions())
+        list(scraper.collect())
+        self.assertEqual(search.kwargs, [{"sort": "likes"}])
+
+        search = pages({"videos": []})
+        scraper, _ = make(TikTokScraper, library=library(search=search),
+                          options=RunOptions(tiktok_sort="relevance"))
+        list(scraper.collect())
+        self.assertEqual(search.kwargs, [{"sort": "relevance"}])
+
+    def test_replies_are_off_by_default(self):
+        calls = []
+
+        def replies(video_id, comment_id, cursor):
+            calls.append(comment_id)
+            return {"replies": [comment("r1")]}
+
+        with_replies = dict(comment("c1"), reply_count=3)
+        lib = library(search=pages({"videos": [video("v1")]}), comments=pages({"comments": [with_replies]}),
+                      replies=replies)
+        scraper, _ = make(TikTokScraper, library=lib)
+        self.assertEqual([r["item_id"] for r in scraper.collect()], ["v1", "c1"])
+        self.assertEqual(calls, [])
+
+    def test_replies_fetched_only_for_comments_with_replies(self):
+        calls = []
+
+        def replies(video_id, comment_id, cursor):
+            calls.append((video_id, comment_id, cursor))
+            if cursor is None:
+                return {"replies": [comment("r1")], "next_cursor": "20", "has_more": True}
+            return {"replies": [comment("r2")], "next_cursor": None, "has_more": False}
+
+        lib = library(search=pages({"videos": [video("v1")]}),
+                      comments=pages({"comments": [dict(comment("c1"), reply_count=2), comment("c2")]}),
+                      replies=replies)
+        scraper, archive = make(TikTokScraper, library=lib,
+                                options=RunOptions(max_pages=1, comment_pages=1, tiktok_replies=5))
+        records = list(scraper.collect())
+
+        self.assertEqual([(r["item_type"], r["item_id"], r["parent_id"]) for r in records],
+                         [("post", "v1", None), ("comment", "c1", "v1"), ("reply", "r1", "c1"),
+                          ("reply", "r2", "c1"), ("comment", "c2", "v1")])
+        self.assertEqual(calls, [("v1", "c1", None), ("v1", "c1", "20")])
+        self.assertTrue(all(r["conversation_id"] == "v1" for r in records))
+        self.assertIn("tiktok_replies", [label for label, _ in archive.saved])
+
+    def test_reply_page_cap_is_recorded(self):
+        def replies(video_id, comment_id, cursor):
+            return {"replies": [comment(f"r{cursor}")], "next_cursor": "x", "has_more": True}
+
+        lib = library(search=pages({"videos": [video("v1")]}),
+                      comments=pages({"comments": [dict(comment("c1"), reply_count=9)]}), replies=replies)
+        scraper, _ = make(TikTokScraper, library=lib,
+                          options=RunOptions(max_pages=1, comment_pages=1, tiktok_replies=1))
+        self.assertEqual(sum(r["item_type"] == "reply" for r in scraper.collect()), 1)
+        self.assertEqual(scraper.stats["reply_page_cap_reached"], 1)
 
     def test_accounts_only_with_flag_and_stop_at_old_videos(self):
         user = pages({"videos": [video("pin", created="2020-01-01T00:00:00Z", pinned=True, comments=0),

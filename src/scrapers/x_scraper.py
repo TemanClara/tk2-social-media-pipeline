@@ -12,14 +12,22 @@ Developer Console di .env sebagai X_BEARER_TOKEN).
        Satu kueri gabungan per rentang waktu:
        ("Teddy Indra Wijaya" OR "Mayor Teddy" OR ... OR #mayorteddy) -is:retweet lang:id
        Retweet dibuang karena teksnya terpotong dan metriknya milik post asli.
+       Urutan diatur --x-sort: "relevancy" (bawaan) menyebar hasil di sepanjang
+       rentang; "recency" mengambil yang terbaru dulu, sehingga dengan batas
+       baca hasilnya menumpuk di akhir rentang (diuji 18 Okt 2026).
     2. Balasan tiap percakapan  GET /2/tweets/search/all
        dengan kueri conversation_id:<id> -is:retweet, start_time = waktu post.
-       Hanya untuk post yang reply_count > 0.
+       Hanya untuk post yang reply_count > 0. Memakai urutan bawaan X, tidak
+       mengikuti --x-sort.
     3. Quote-tweet  GET /2/tweets/:id/quote_tweets
        Hanya untuk post yang quote_count > 0.
 
 Pengaman biaya (tiap post yang dibaca ditagih):
     X_MAX_POSTS_READ di .env   batas total post yang dibaca per run (bawaan 2000)
+    --x-budget                 "rata" (bawaan): jatah dibagi rata ke tiap rentang waktu,
+                               sisa yang tak terpakai ikut ke rentang berikutnya;
+                               "bersama": satu jatah dipakai berurutan, rentang awal
+                               bisa menghabiskannya. Hanya berbeda bila --window peristiwa.
     MAX_REPLIES / MAX_QUOTES   batas per percakapan
     --limit                    juga memperkecil ukuran halaman saat uji coba
 Parameter `expansions` sengaja tidak dipakai supaya objek pengguna tidak ikut
@@ -89,22 +97,36 @@ class XScraper(ScraperRuntime, BaseScraper):
         return self._session
 
     def collect(self, limit: int | None = None) -> Iterator[dict]:
-        self.budget = int(os.getenv("X_MAX_POSTS_READ", DEFAULT_MAX_POSTS_READ))
+        remaining = int(os.getenv("X_MAX_POSTS_READ", DEFAULT_MAX_POSTS_READ))
         self.page_size = max(10, min(100, limit)) if limit else 100
         self._done_conversations: set[str] = set()
         query = build_query(self.keywords)
         ranges = date_ranges(self.keywords, self.options.window)
         self.logger.info("X: kueri %s", query)
-        self.logger.info("X: %d rentang waktu, batas baca %d post", len(ranges), self.budget)
+        self.logger.info("X: %d rentang waktu, batas baca %d post (%s), urutan %s",
+                         len(ranges), remaining, self.options.x_budget, self.options.x_sort)
 
-        for start, end in ranges:
-            self.logger.info("X: mencari %s s/d %s", start.date(), end.date())
-            params = {"query": query, "start_time": _rfc3339(start), "end_time": _rfc3339(end)}
+        for index, (start, end) in enumerate(ranges):
+            # "rata": sisa jatah dibagi rata ke rentang yang belum diproses, jadi
+            # jatah yang tidak terpakai di satu rentang ikut ke rentang berikutnya.
+            # "bersama": satu jatah dipakai berurutan; rentang awal bisa menghabiskannya.
+            if self.options.x_budget == "rata":
+                allocated = remaining // (len(ranges) - index)
+            else:
+                allocated = remaining
+            self.budget = allocated
+            self.logger.info("X: mencari %s s/d %s, jatah %d post", start.date(), end.date(), allocated)
+            params = {"query": query, "start_time": _rfc3339(start), "end_time": _rfc3339(end),
+                      "sort_order": self.options.x_sort}
             for post in self._paged("/tweets/search/all", params, label="x_search",
                                     max_pages=self.options.max_pages, max_items=None):
                 terms = matched_terms(self._text(post), self.keywords)
                 yield self._record(post, terms)
                 yield from self._thread(post, terms)
+            used = allocated - self.budget
+            remaining -= used
+            self.stats[f"posts_read_{start.date()}"] += used
+            self.logger.info("X: rentang %s memakai %d post, sisa jatah %d", start.date(), used, remaining)
 
     # --- percakapan -------------------------------------------------------
 
@@ -131,7 +153,7 @@ class XScraper(ScraperRuntime, BaseScraper):
         while max_pages is None or page < max_pages:
             if self.budget <= 0:
                 self.stats["budget_exhausted"] += 1
-                self.logger.warning("X: batas X_MAX_POSTS_READ tercapai, berhenti mengambil.")
+                self.logger.warning("X: jatah baca rentang ini habis, berhenti mengambil.")
                 return
             size = min(self.page_size, self.budget, (max_items - taken) if max_items else 100)
             size = max(10, size)  # batas bawah max_results di kedua endpoint
@@ -203,6 +225,8 @@ class XScraper(ScraperRuntime, BaseScraper):
             like_count=metrics.get("like_count"),
             reply_count=metrics.get("reply_count"),
             share_count=metrics.get("retweet_count"),
+            view_count=metrics.get("impression_count"),
+            language=item.get("lang"),
             url=f"https://x.com/i/status/{item['id']}",
             query=terms,
         )

@@ -12,7 +12,8 @@ Hasil:
 Username di record sudah berupa hash sejak scraping. Untuk repo publik,
 cuplikan ini menyamarkan lebih jauh, karena teks dan tautan masih bisa
 membawa ke identitas pengguna:
-    - @mention di dalam teks diganti "@[pengguna]"
+    - @mention di dalam teks diganti "@[pengguna]", juga bila run sudah memakai
+      --mask-mentions (token @user_<hash> pun disamarkan untuk repo publik)
     - teks dipotong (bawaan 80 karakter), sesuai janji "kutipan pendek"
     - kolom url dikosongkan, karena tautan komentar membuka profil penulisnya
 Aturan ini perlu dikonfirmasi bersama C6 (Clara).
@@ -23,13 +24,12 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import re
 from pathlib import Path
 
+from src.common.anonymize import MENTION
 from src.common.config import ROOT
 from src.scrapers.base import UNIFIED_FIELDS
 
-MENTION = re.compile(r"@[\w.]+")
 COLUMNS = UNIFIED_FIELDS + ["_scraped_at", "_run_id"]
 
 
@@ -83,7 +83,9 @@ def main() -> int:
     with open(csv_path, "w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=COLUMNS)
         writer.writeheader()
-        writer.writerows(sample)
+        for row in sample:
+            # daftar hashtag ditulis sebagai teks dipisah spasi agar rapi di Excel
+            writer.writerow({**row, "hashtags": " ".join(row.get("hashtags") or [])})
 
     evidence_dir = ROOT / "docs" / "evidence"
     evidence_dir.mkdir(parents=True, exist_ok=True)

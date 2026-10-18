@@ -25,6 +25,9 @@ UNIFIED_FIELDS = [
     "like_count",
     "reply_count",
     "share_count",
+    "view_count",      # jumlah tayang/putar; kosong untuk komentar dan bila tidak tersedia
+    "hashtags",        # daftar hashtag di teks, huruf kecil tanpa '#'
+    "language",        # kode bahasa dari platform (X, TikTok); kosong untuk Instagram
     "url",
     "query",           # kata kunci/hashtag/akun yang memunculkan record ini
 ]

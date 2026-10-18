@@ -14,13 +14,23 @@ API web TikTok tanpa login dan tanpa API key. TikTok Research API tidak
 tersedia untuk Indonesia (lihat docs/decisions.md).
 
 Sumber video, dibaca dari config/keywords.yaml:
-    kata_kunci             -> pencarian video (edisi Indonesia)
+    kata_kunci             -> pencarian video (edisi Indonesia), urutan --tiktok-sort
     hashtag                -> video per hashtag (urutan ranking TikTok)
     akun_target.tiktok     -> video terbaru akun, hanya bila --with-accounts
 
 Hanya video yang dibuat di dalam rentang periode yang disimpan. Komentar pada
 video tersebut diambil semua sampai batas --comment-pages, termasuk komentar
 yang ditulis setelah periode selesai.
+
+Urutan pencarian (--tiktok-sort): "likes" (bawaan) atau "relevance". Pada uji
+18 Okt 2026, "relevance" hampir hanya memberi video bulan terakhir (0 dan 18
+dari ~60 video masuk periode), sedangkan "likes" memberi 35 dan 40. "likes"
+mengutamakan video populer; bias ini dicatat di C3.
+
+Balasan komentar (--tiktok-replies N, bawaan 0): bila N > 0, untuk tiap
+komentar yang reply_count > 0 diambil sampai N halaman balasan (~20 per
+halaman), disimpan sebagai item_type "reply" dengan parent_id = ID komentar.
+Satu halaman = satu permintaan tambahan per komentar, jadi run jauh lebih lama.
 """
 
 from __future__ import annotations
@@ -46,14 +56,17 @@ def load_library() -> SimpleNamespace:
     from tiktok.discovery import get_hashtag_posts
     from tiktok.search import search_videos
     from tiktok.users import get_posts
-    from tiktok.videos import get_comments
+    from tiktok.videos import get_comment_replies, get_comments
 
     fetch.BOOT_PATH = BOOT_PATH
     return SimpleNamespace(
-        search_videos=lambda query, cursor: search_videos(query, country=SEARCH_COUNTRY, cursor=cursor),
+        search_videos=lambda query, cursor, sort: search_videos(query, country=SEARCH_COUNTRY, sort=sort,
+                                                                 cursor=cursor),
         hashtag_videos=lambda tag, cursor: get_hashtag_posts(refs.resolve_hashtag(tag), cursor=cursor),
         user_videos=lambda user, cursor: get_posts(refs.resolve_user(user), cursor=cursor),
         comments=lambda video_id, cursor: get_comments({"id": video_id, "short_link": None}, cursor=cursor),
+        replies=lambda video_id, comment_id, cursor: get_comment_replies(
+            {"id": video_id, "short_link": None}, comment_id, cursor=cursor),
     )
 
 
@@ -74,7 +87,10 @@ class TikTokScraper(ScraperRuntime, BaseScraper):
         self.ranges = date_ranges(self.keywords, self.options.window)
         self._done_videos: set[str] = set()
 
-        sources = [("kata_kunci", kw, self.lib.search_videos) for kw in self.keywords.get("kata_kunci", [])]
+        def search(query, cursor):
+            return self.lib.search_videos(query, cursor, sort=self.options.tiktok_sort)
+
+        sources = [("kata_kunci", kw, search) for kw in self.keywords.get("kata_kunci", [])]
         sources += [("hashtag", tag.lstrip("#"), self.lib.hashtag_videos) for tag in self.keywords.get("hashtag", [])]
         if self.options.with_accounts:
             accounts = self.keywords.get("akun_target", {}).get("tiktok", [])
@@ -134,9 +150,29 @@ class TikTokScraper(ScraperRuntime, BaseScraper):
                 self.archive.save(result, label="tiktok_comments")
             for comment in result.get("comments") or []:
                 yield self._comment_record(comment, video, query)
+                if self.options.tiktok_replies > 0 and (comment.get("reply_count") or 0) > 0:
+                    yield from self._replies(comment, video, query)
             cursor = result.get("next_cursor")
             if not result.get("has_more") or not cursor:
                 return
+
+    def _replies(self, comment, video, query) -> Iterator[dict]:
+        cursor = None
+        for page in range(1, self.options.tiktok_replies + 1):
+            self.pause()
+            try:
+                result = self.lib.replies(video["id"], comment["id"], cursor)
+            except Exception as exc:
+                self.fail(f"balasan komentar {comment['id']} halaman {page}", exc)
+                return
+            if self.archive:
+                self.archive.save(result, label="tiktok_replies")
+            for reply in result.get("replies") or []:
+                yield self._comment_record(reply, video, query, parent_id=comment["id"])
+            cursor = result.get("next_cursor")
+            if not result.get("has_more") or not cursor:
+                return
+        self.stats["reply_page_cap_reached"] += 1
 
     def _video_record(self, video: dict, query: str) -> dict:
         stats = video.get("stats") or {}
@@ -151,13 +187,15 @@ class TikTokScraper(ScraperRuntime, BaseScraper):
             like_count=stats.get("like_count"),
             reply_count=stats.get("comment_count"),
             share_count=stats.get("share_count"),
+            view_count=stats.get("play_count"),
+            language=video.get("language"),
             # tanpa username: link asli TikTok berbentuk /@<username>/video/<id>
             url=f"https://www.tiktok.com/@/video/{video['id']}",
             query=query,
         )
 
-    def _comment_record(self, comment: dict, video: dict, query: str) -> dict:
-        parent = comment.get("parent_comment_id")
+    def _comment_record(self, comment: dict, video: dict, query: str, parent_id: str | None = None) -> dict:
+        parent = parent_id or comment.get("parent_comment_id")
         return self.to_unified(
             item_type="reply" if parent else "comment",
             item_id=str(comment["id"]),
@@ -169,6 +207,7 @@ class TikTokScraper(ScraperRuntime, BaseScraper):
             like_count=comment.get("like_count"),
             reply_count=comment.get("reply_count"),
             share_count=None,
+            language=comment.get("language"),
             url=comment.get("link"),
             query=query,
         )
