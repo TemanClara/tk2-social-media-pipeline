@@ -14,10 +14,10 @@ peristiwa_pemicu:
     tanggal: "2024-10-20"
     jendela_hari: 14
   - nama: kenaikan_pangkat_letkol
-    tanggal: "2025-02-01"   # TODO: pastikan tanggal persisnya
+    tanggal: "2025-02-25"
     jendela_hari: 14
   - nama: viral_social_experiment
-    tanggal: "2026-01-01"   # TODO: tetapkan tanggal dari observasi awal
+    tanggal: "2026-05-13"
     jendela_hari: 14
 
 kata_kunci:

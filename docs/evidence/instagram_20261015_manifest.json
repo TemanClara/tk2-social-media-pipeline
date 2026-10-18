@@ -1,0 +1,80 @@
+{
+  "run_id": "instagram_20261015_195605",
+  "platform": "instagram",
+  "started_at": "2026-10-15T12:56:05.069003+00:00",
+  "finished_at": "2026-10-15T12:56:25.036009+00:00",
+  "status": "completed",
+  "params": {
+    "limit": 40,
+    "batch_size": 500,
+    "max_pages": 2,
+    "comment_pages": 1,
+    "with_accounts": false,
+    "window": "periode",
+    "request_delay_seconds": 2.0,
+    "max_retries": 4
+  },
+  "keywords_snapshot": {
+    "periode": {
+      "mulai": "2024-10-01",
+      "selesai": "2026-09-30"
+    },
+    "peristiwa_pemicu": [
+      {
+        "nama": "pengumuman_kabinet",
+        "tanggal": "2024-10-20",
+        "jendela_hari": 14
+      },
+      {
+        "nama": "kenaikan_pangkat_letkol",
+        "tanggal": "2025-02-01",
+        "jendela_hari": 14
+      },
+      {
+        "nama": "viral_social_experiment",
+        "tanggal": "2026-01-01",
+        "jendela_hari": 14
+      }
+    ],
+    "kata_kunci": [
+      "Teddy Indra Wijaya",
+      "Mayor Teddy",
+      "Letkol Teddy",
+      "Seskab Teddy"
+    ],
+    "hashtag": [
+      "mayorteddy"
+    ],
+    "akun_target": {
+      "tiktok": [],
+      "instagram": [],
+      "x": []
+    },
+    "bahasa": {
+      "utama": "id",
+      "sertakan_non_indonesia": false
+    },
+    "volume_target": {
+      "tiktok": 0,
+      "instagram": 0,
+      "x": 0
+    }
+  },
+  "counts": {
+    "fetched": 40,
+    "written": 40,
+    "duplicates": 0,
+    "errors": 0,
+    "written_post": 4,
+    "written_comment": 36,
+    "posts_seen": 4,
+    "comment_page_cap_reached": 2,
+    "raw_pages": 8
+  },
+  "environment": {
+    "python": "3.13.16",
+    "os": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "git_commit": "c42b3dc"
+  },
+  "duration_seconds": 20.0
+}

@@ -1,0 +1,13 @@
+2026-10-15 19:56:36,839 | INFO    | Mulai run tiktok_20261015_195636
+2026-10-15 19:56:36,861 | INFO    | Menulis ke data/interim/tiktok_20261015_195636/batch_0001.jsonl
+2026-10-15 19:56:36,882 | INFO    | TikTok: 5 sumber akan ditelusuri
+2026-10-15 19:56:36,883 | INFO    | TikTok: menelusuri kata_kunci:Teddy Indra Wijaya
+2026-10-15 19:56:40,750 | INFO    | TikTok: kata_kunci:Teddy Indra Wijaya halaman 1, 20 video
+2026-10-15 19:56:45,556 | INFO    | TikTok: kata_kunci:Teddy Indra Wijaya halaman 2, 20 video
+2026-10-15 19:56:50,384 | INFO    | TikTok: kata_kunci:Teddy Indra Wijaya halaman 3, 20 video
+2026-10-15 19:56:52,898 | INFO    | TikTok: menelusuri kata_kunci:Mayor Teddy
+2026-10-15 19:56:55,782 | INFO    | TikTok: kata_kunci:Mayor Teddy halaman 1, 20 video
+2026-10-15 19:57:00,874 | INFO    | Batas 60 record tercapai.
+2026-10-15 19:57:00,875 | INFO    | Selesai. 60 record tersimpan, 0 duplikat dilewati.
+2026-10-15 19:57:00,876 | INFO    | Statistik: {'fetched': 60, 'written': 60, 'duplicates': 0, 'errors': 0, 'written_post': 2, 'written_comment': 58, 'videos_seen': 67, 'out_of_period': 65, 'raw_pages': 6}
+2026-10-15 19:57:00,876 | INFO    | Manifest run disimpan di data/interim/tiktok_20261015_195636/manifest.json

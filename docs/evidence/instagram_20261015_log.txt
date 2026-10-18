@@ -1,0 +1,9 @@
+2026-10-15 19:56:05,068 | INFO    | Mulai run instagram_20261015_195605
+2026-10-15 19:56:05,091 | INFO    | Menulis ke data/interim/instagram_20261015_195605/batch_0001.jsonl
+2026-10-15 19:56:05,108 | INFO    | Instagram: 5 sumber akan ditelusuri
+2026-10-15 19:56:05,108 | INFO    | Instagram: menelusuri kata_kunci:Teddy Indra Wijaya
+2026-10-15 19:56:05,596 | INFO    | Instagram: kata_kunci:Teddy Indra Wijaya halaman 1, 12 unggahan
+2026-10-15 19:56:25,034 | INFO    | Batas 40 record tercapai.
+2026-10-15 19:56:25,035 | INFO    | Selesai. 40 record tersimpan, 0 duplikat dilewati.
+2026-10-15 19:56:25,037 | INFO    | Statistik: {'fetched': 40, 'written': 40, 'duplicates': 0, 'errors': 0, 'written_post': 4, 'written_comment': 36, 'posts_seen': 4, 'comment_page_cap_reached': 2, 'raw_pages': 8}
+2026-10-15 19:56:25,037 | INFO    | Manifest run disimpan di data/interim/instagram_20261015_195605/manifest.json

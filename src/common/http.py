@@ -67,8 +67,7 @@ def get_with_retry(
             return response
 
         if response.status_code in RETRYABLE_STATUS:
-            retry_after = response.headers.get("Retry-After")
-            wait = float(retry_after) if retry_after else delay_seconds * (2 ** (attempt - 1))
+            wait = _server_wait(response) or delay_seconds * (2 ** (attempt - 1))
             logger.warning(
                 "Status %s dari %s. Menunggu %.1fs (percobaan %d/%d)",
                 response.status_code, url, wait, attempt, max_retries,
@@ -76,8 +75,30 @@ def get_with_retry(
             time.sleep(wait)
             continue
 
-        logger.error("Status %s dari %s. Tidak dicoba ulang.", response.status_code, url)
+        logger.error("Status %s dari %s. Tidak dicoba ulang. Isi: %s",
+                     response.status_code, url, response.text[:300])
         return None
 
     logger.error("Menyerah pada %s setelah %d percobaan.", url, max_retries)
+    return None
+
+
+MAX_SERVER_WAIT = 900  # detik; batas tunggu yang diminta server
+
+
+def _server_wait(response: requests.Response) -> float | None:
+    """Lama tunggu yang diminta server: Retry-After, atau x-rate-limit-reset
+    (waktu epoch, dipakai X API) bila Retry-After tidak ada."""
+    retry_after = response.headers.get("Retry-After")
+    if retry_after:
+        try:
+            return min(float(retry_after), MAX_SERVER_WAIT)
+        except ValueError:
+            pass
+    reset = response.headers.get("x-rate-limit-reset")
+    if reset:
+        try:
+            return min(max(float(reset) - time.time(), 1.0), MAX_SERVER_WAIT)
+        except ValueError:
+            pass
     return None
