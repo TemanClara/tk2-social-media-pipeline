@@ -9,88 +9,134 @@ Sosial".
 
 | RQ | Pertanyaan ringkas | Platform utama | Data yang diambil |
 |---|---|---|---|
-| RQ1 | Praktik *fan culture* apa yang muncul dan bagaimana persebarannya | TikTok | Video per hashtag beserta caption, metadata, dan komentar |
-| RQ2 | Bagaimana distribusi sentimen antara ekspresi penggemar dan wacana kritis | Instagram | Komentar pada unggahan akun berita dan akun apresiasi |
+| RQ1 | Praktik *fan culture* apa yang muncul dan bagaimana persebarannya | TikTok | Video per kata kunci dan hashtag beserta caption, metadata, dan komentar |
+| RQ2 | Bagaimana distribusi sentimen antara ekspresi penggemar dan wacana kritis | Instagram | Komentar pada unggahan per kata kunci dan hashtag; opsional dari akun berita dan akun apresiasi |
 | RQ3 | Bagaimana penggemar merespons kritik | X | Post, balasan, *quote-tweet*, dan ID percakapan |
+
+Cara akses per platform: X lewat X API v2 resmi; TikTok dan Instagram lewat
+library open-source omkarcloud tanpa login (tidak resmi). Alasan pemilihannya
+ada di [`docs/decisions.md`](docs/decisions.md).
 
 ## Struktur folder
 
 ```
-config/keywords.yaml     parameter pengumpulan: kata kunci, hashtag, akun, periode
+config/keywords.yaml     parameter pengumpulan: kata kunci, hashtag, akun, periode, peristiwa
 src/common/              modul bersama: konfigurasi, HTTP, penyimpanan, manifest, hash
-src/scrapers/            satu berkas per platform
+src/scrapers/            satu berkas per platform, plus _common.py (opsi run, rentang
+                         waktu) dan _vendor.py (pemuat library third_party)
 src/run_scrape.py        perintah untuk menjalankan scraping
 src/summarize_runs.py    rekap jumlah data seluruh run
+src/make_sample.py       cuplikan teranonimisasi untuk data/sample/ dan docs/evidence/
+tests/                   tes unit, tanpa jaringan dan tanpa biaya
+third_party/             salinan library omkarcloud untuk TikTok dan Instagram (MIT)
 data/raw/                respons asli dari platform — tidak di-commit
 data/interim/            record ternormalisasi + manifest tiap run — tidak di-commit
 data/processed/          dataset siap analisis (C4) — tidak di-commit
 data/sample/             contoh kecil teranonimisasi sebagai bukti
+docs/scrapers.md         cara kerja tiap scraper, semua opsi, hasil uji coba
 docs/decisions.md        catatan keputusan API vs scraping (bahan tulisan C3)
 docs/evidence/           tangkapan layar dan cuplikan bukti scraping
+logs/                    log tiap run — tidak di-commit
 ```
 
 Penjelasan tiga lapis data dan kamus kolomnya ada di [`data/README.md`](data/README.md).
 
 ## Instalasi
 
-Butuh Python 3.10 atau lebih baru.
+Butuh Python 3.10 atau lebih baru (diuji dengan Python 3.13).
 
 ```bash
-git clone <URL-REPO-INI>
+git clone https://github.com/TemanClara/tk2-social-media-pipeline.git
 cd tk2-social-media-pipeline
 make setup
 ```
 
 `make setup` membuat virtualenv di `.venv`, memasang dependensi dari
-`pyproject.toml`, dan menyalin `.env.example` menjadi `.env` bila belum ada.
-Jalankan `make` tanpa argumen untuk melihat seluruh perintah yang tersedia.
+`pyproject.toml` beserta tambahan `scrapers` (`curl_cffi` dan `marshmallow`,
+dibutuhkan scraper TikTok dan Instagram), dan menyalin `.env.example` menjadi
+`.env` bila belum ada. Jalankan `make` tanpa argumen untuk melihat seluruh
+perintah yang tersedia.
 
 Tanpa `make`, langkahnya setara dengan:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install -e .
+pip install -e ".[scrapers]"
 cp .env.example .env
 ```
 
 ### Mengunci versi
 
 Daftar dependensi ada di `pyproject.toml` dengan versi dipatok pada rentang
-minor yang sama. Setelah pemasangan berhasil, jalankan `make lock` untuk
-menulis versi persis yang terpasang ke `requirements.lock.txt`, lalu commit
-berkas itu. Anggota tim yang ingin lingkungan identik memasang dengan
+minor yang sama. `make lock` menulis versi persis yang sedang terpasang ke
+`requirements.lock.txt`; berkas ini **belum dibuat**. Setelah dibuat dan
+di-commit, anggota tim yang ingin lingkungan identik memasang dengan
 `pip install -r requirements.lock.txt`.
 
 ## Konfigurasi
 
-1. Salin berkas contoh kredensial:
+1. Buka `.env` (dibuat oleh `make setup`; tidak ikut ter-*commit*) dan isi:
+
+   | Variabel | Wajib untuk | Isi |
+   |---|---|---|
+   | `X_BEARER_TOKEN` | X | Bearer Token dari X Developer Console. Terikat ke akun dan saldo pemiliknya, jangan dibagikan |
+   | `X_MAX_POSTS_READ` | X | Batas post yang dibaca per run, karena tiap post ditagih. Bawaan 2000 |
+   | `PSEUDONYM_SALT` | semua platform | String acak panjang untuk hash username |
+   | `REQUEST_DELAY_SECONDS` | semua platform | Jeda antar permintaan. Bawaan 2.0 |
+   | `MAX_RETRIES` | X | Jumlah percobaan ulang. Bawaan 4 |
+
+   TikTok dan Instagram diakses tanpa login, jadi tidak butuh kredensial.
+
+   Untuk membuat `PSEUDONYM_SALT`:
 
    ```bash
-   cp .env.example .env
+   .venv/bin/python -c "import secrets; print(secrets.token_hex(32))"
    ```
 
-2. Buka `.env`, isi kredensial tiap platform dan `PSEUDONYM_SALT` dengan
-   string acak yang panjang. Nilai salt harus sama antar anggota tim dan
-   tidak boleh diubah selama pengumpulan data, supaya hash username
-   konsisten. Berkas `.env` tidak ikut ter-*commit*.
+   Salt tidak boleh diubah selama pengumpulan data, supaya hash konsisten.
+   Bagikan hanya lewat jalur pribadi, kepada anggota tim yang ikut menjalankan
+   scraping atau modul yang meng-hash username.
 
-3. Buka `config/keywords.yaml`, sesuaikan kata kunci, hashtag, daftar akun,
-   dan periode mengikuti hasil penguncian C1.
+2. Buka `config/keywords.yaml` dan sesuaikan mengikuti hasil penguncian C1:
+
+   | Bagian | Dipakai untuk |
+   |---|---|
+   | `periode` | Rentang `--window periode` (bawaan) |
+   | `peristiwa_pemicu` | Rentang `--window peristiwa`: tanggal tiap peristiwa dan `jendela_hari` |
+   | `kata_kunci`, `hashtag` | Sumber pencarian di ketiga platform; di X digabung menjadi satu kueri |
+   | `akun_target` | Sumber tambahan TikTok/Instagram, hanya dipakai dengan `--with-accounts` |
+   | `bahasa` | Filter `lang:` pada kueri X |
+   | `volume_target` | Target jumlah data (belum dipakai kode, untuk rujukan laporan) |
+
+3. Cek kesiapan tanpa mengambil data (ganti `x` dengan `tiktok` atau
+   `instagram`). Yang diharapkan: baris terakhir `Dry-run lolos.`
+
+   ```bash
+   .venv/bin/python -m src.run_scrape --platform x --dry-run
+   ```
 
 ## Menjalankan
 
 ```bash
-make smoke            # cek konfigurasi tanpa mengambil data
-make scrape-x         # jalankan scraping X
+make test             # tes unit, tanpa jaringan dan tanpa biaya
+make smoke            # dry-run X: cek konfigurasi tanpa mengambil data
+make scrape-x         # jalankan scraping X dengan opsi bawaan
+make scrape-tiktok    # jalankan scraping TikTok dengan opsi bawaan
+make scrape-instagram # jalankan scraping Instagram dengan opsi bawaan
 make stats            # rekap jumlah data seluruh run
 ```
 
-Atau langsung:
+Atau langsung, misalnya uji kecil lalu run penuh:
 
 ```bash
-python -m src.run_scrape --platform x --limit 50
+.venv/bin/python -m src.run_scrape --platform tiktok --limit 20
+.venv/bin/python -m src.run_scrape --platform x --window peristiwa
 ```
+
+Untuk X, uji kecil tetap berbayar; turunkan `X_MAX_POSTS_READ` di `.env` dulu.
+Kalau run terputus, jalankan perintah yang sama lagi; item yang sudah
+tersimpan dilewati.
 
 Pilihan perintah:
 
@@ -114,51 +160,88 @@ Nilai yang dipakai tercatat di `manifest.json` tiap run. Penjelasan cara kerja
 tiap scraper, pengaruh tiap opsi, dan hasil uji cobanya ada di
 [`docs/scrapers.md`](docs/scrapers.md).
 
+Cuplikan teranonimisasi untuk bukti (`data/sample/` dan `docs/evidence/`):
+
+```bash
+.venv/bin/python -m src.make_sample data/interim/<run_id>
+```
+
 ## Keluaran
 
 ```
-data/raw/<run_id>/page_00001.json.gz     respons asli, untuk parsing ulang
-data/raw/_seen_<platform>.txt            ID yang sudah diambil, lintas run
-data/interim/<run_id>/batch_0001.jsonl   record ternormalisasi
-data/interim/<run_id>/manifest.json      parameter, jumlah data, status run
-logs/<run_id>.log
+data/raw/<run_id>/<label>_00001.json.gz   respons asli per halaman, untuk parsing ulang
+data/raw/_seen_<platform>.txt             ID yang sudah diambil, lintas run
+data/interim/<run_id>/batch_0001.jsonl    record ternormalisasi, satu per baris
+data/interim/<run_id>/manifest.json       parameter, statistik, status run
+logs/<run_id>.log                         log lengkap run
 ```
 
-Setiap baris pada berkas `.jsonl` adalah satu record dengan kolom yang sama
-di ketiga platform:
+`<run_id>` berbentuk `<platform>_<YYYYMMDD>_<HHMMSS>` (waktu lokal), misalnya
+`tiktok_20261019_090000`. `<label>` menunjukkan jenis respons: `x_search`,
+`x_replies`, `x_quotes`, `tiktok_videos`, `tiktok_comments`, `tiktok_replies`,
+`instagram_posts`, `instagram_details`, atau `instagram_comments`. Berkas di
+`data/raw/` memuat username asli, jadi jangan pernah di-commit atau dibagikan.
 
-| Kolom | Isi |
-|---|---|
-| `platform` | `tiktok`, `instagram`, atau `x` |
-| `item_type` | `post`, `comment`, `reply`, atau `quote` |
-| `item_id` | ID unik di platform asal |
-| `parent_id` | ID unggahan atau komentar induk |
-| `conversation_id` | ID percakapan, dipakai untuk menelusuri alur balasan pada RQ3 |
-| `author_hash` | username yang sudah dipseudonimkan |
-| `text` | isi teks |
-| `created_at` | waktu unggah (ISO 8601) |
-| `like_count`, `reply_count`, `share_count` | metrik interaksi |
-| `view_count` | jumlah tayang/putar (unggahan saja) |
-| `hashtags` | daftar hashtag di teks, huruf kecil tanpa `#` |
-| `language` | kode bahasa dari platform (X, TikTok; kosong untuk Instagram) |
-| `url` | tautan ke unggahan asli |
-| `query` | kata kunci, hashtag, atau akun yang memunculkan record ini |
+### Membaca record
 
-Berkas `_seen_<platform>.txt` menyimpan ID yang sudah pernah diambil, sehingga
-run yang terputus dapat dilanjutkan tanpa mengulang dari awal.
+Setiap baris `.jsonl` adalah satu record dengan kolom yang sama di ketiga
+platform. Contoh bentuknya (nilai dikarang untuk ilustrasi):
 
-Setiap run juga menulis `manifest.json` berisi parameter yang dipakai, salinan
-isi `config/keywords.yaml` saat itu, jumlah data yang masuk, dan status akhir.
-Angka jumlah data di laporan diambil dari `make stats`, bukan diketik ulang,
-supaya C1, C4, C5, dan README tidak saling berbeda.
+```json
+{"platform": "tiktok", "item_type": "comment", "item_id": "7600000000000000002",
+ "parent_id": "7600000000000000001", "conversation_id": "7600000000000000001",
+ "author_hash": "3f9a1c0b7d2e4a68", "text": "keren banget pak",
+ "created_at": "2025-03-01T10:15:00Z", "like_count": 12, "reply_count": 0,
+ "share_count": null, "view_count": null, "hashtags": [], "language": "id",
+ "url": "https://www.tiktok.com/@/video/7600000000000000001?comment_id=7600000000000000002",
+ "query": "kata_kunci:Mayor Teddy",
+ "_scraped_at": "2026-10-19T02:00:00+00:00", "_run_id": "tiktok_20261019_090000"}
+```
+
+Arti lengkap tiap kolom ada di [`data/README.md`](data/README.md). Yang
+paling sering keliru dibaca:
+
+- **`comment` dan `reply` berbeda.** `comment` menanggapi unggahan, `reply` di
+  TikTok menanggapi komentar. Di X semua tanggapan adalah `reply`, dan
+  `quote` adalah post yang mengutip post lain.
+- **`parent_id`** menunjuk ke induk langsung; **`conversation_id`** ke
+  unggahan paling atas, sehingga satu percakapan bisa dikelompokkan. Di X,
+  `quote` memulai percakapan baru.
+- **`reply_count`** pada unggahan TikTok/Instagram berarti jumlah komentar;
+  pada komentar berarti jumlah balasan.
+- **Kolom kosong** (`null`) berarti platform tidak menyediakan data itu,
+  bukan error. Contoh: `share_count` Instagram, `language` Instagram.
+- **Waktu dalam UTC.** `created_at`, `_scraped_at`, dan kolom `mulai` pada
+  `make stats` memakai UTC, bukan WIB (WIB = UTC + 7 jam).
+- **`query`** menunjukkan sumber yang memunculkan record. TikTok/Instagram:
+  `kata_kunci:...`, `hashtag:...`, atau `akun:...`. X: kata kunci/hashtag yang
+  muncul di teks.
+
+### Manifest dan rekap
+
+Setiap run menulis `manifest.json` berisi parameter yang dipakai, salinan
+isi `config/keywords.yaml` saat itu, statistik (`counts`), status akhir
+(`completed`, `interrupted`, atau `failed`), serta versi Python dan commit
+kode. Arti tiap angka di `counts` ada di
+[`docs/scrapers.md`](docs/scrapers.md#perilaku-bersama). Angka jumlah data di
+laporan diambil dari `make stats`, bukan diketik ulang, supaya C1, C4, C5, dan
+README tidak saling berbeda.
 
 ## Catatan etika
 
-- Hanya mengambil konten dari akun publik.
-- Username disimpan dalam bentuk hash, tidak dalam bentuk asli.
-- Jeda antar permintaan diatur lewat `REQUEST_DELAY_SECONDS`; status 429
-  dihormati dengan menunggu sesuai `Retry-After`.
-- Data mentah tidak pernah masuk ke repositori publik.
+- Hanya mengambil konten dari akun publik; akun privat dilewati.
+- TikTok dan Instagram diakses tanpa login lewat library tidak resmi. Di
+  TikTok, sesi dibuka lewat halaman `/explore` karena halaman bawaannya
+  diblokir anti-bot dari IP Indonesia. Kedua hal ini dinilai di C6.
+- Username disimpan dalam bentuk hash bergaram, tidak dalam bentuk asli.
+  Kolom `url` tidak memuat username. @username di dalam teks bisa disamarkan
+  dengan `--mask-mentions`.
+- Jeda antar permintaan diatur lewat `REQUEST_DELAY_SECONDS` dan diberi
+  variasi acak. Status 429 dari X dihormati dengan menunggu sesuai
+  `Retry-After` atau `x-rate-limit-reset`.
+- Data mentah tidak pernah masuk ke repositori publik. Cuplikan di
+  `data/sample/` disamarkan lebih jauh (mention diganti, teks dipotong, tautan
+  dikosongkan).
 
 Uraian lengkapnya ada di bagian C6 laporan.
 
@@ -168,5 +251,5 @@ Uraian lengkapnya ada di bagian C6 laporan.
 |---|---|
 | Azzahra Salsabila | C1 Kebutuhan Data, C7 Penutup |
 | Clara Aurelia Setiady | C2 Pipeline, C6 Etika |
-| Kania Almyra Bilqist | C3 Metode Pengumpulan Data |
+| Kania Almyra Bilqist | C3 Metode Pengumpulan Data, repositori dan scraper |
 | Nafia Levana Aulia | C4 Implementasi Pipeline, C5 Kualitas Data |

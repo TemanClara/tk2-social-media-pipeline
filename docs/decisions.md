@@ -88,6 +88,7 @@ mengakali halaman anti-bot.
 
 ## 5. Hal yang masih terbuka
 
+- [ ] Sumber data RQ2 berubah dari desain TK-1: proposal menyebut komentar pada unggahan akun berita dan akun apresiasi, sedangkan scraper Instagram kini bawaannya mengambil unggahan per kata kunci dan hashtag (akun lewat `--with-accounts`). Perlu disepakati tim (C1) dan disesuaikan di laporan
 - [ ] Pengumpulan penuh dua tahun atau sampel per jendela peristiwa (keputusan CP1). Kode mendukung keduanya (`--window`).
 - [ ] Tafsiran `jendela_hari`: sesudah tanggal peristiwa (implementasi sekarang) atau di sekitarnya
 - [ ] Target volume per platform (dari C1), dan unit hitung TikTok/Instagram: unggahan atau komentar
