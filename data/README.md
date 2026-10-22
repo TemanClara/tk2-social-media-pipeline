@@ -69,6 +69,50 @@ Di TikTok dan Instagram, semua record dalam satu pohon memiliki
 yang dikutip hanya lewat `parent_id`. Instagram saat ini hanya mengambil `comment`; balasan di bawah komentar
 Instagram tidak diambil.
 
+## Dataset processed (`make process`)
+
+`src/process.py` menggabungkan semua run penuh di `interim/` menjadi satu
+dataset analisis. Record **tidak dihapus**; setiap kriteria eksklusi C1
+menjadi kolom `flag_*`, dan kolom `eligible` bernilai `true` bila record lolos
+semua kriteria. Untuk analisis, filter `eligible == true`.
+
+| Langkah | Aturan |
+|---|---|
+| Pilih run | Semua run di `interim/`, kecuali run uji (memakai `--limit`) dan run tanpa `manifest.json`. Atur dengan `--runs`, `--exclude-runs`, `--include-test-runs` |
+| Buang | Hanya record tanpa `item_id` atau dengan platform tak dikenal |
+| Dedup | Kunci `(platform, item_id)`; disimpan versi `_scraped_at` terbaru. Pengaman bila run dari laptop berbeda digabung, karena `_seen_<platform>.txt` hanya berlaku di satu laptop |
+| `text_clean` | NFKC, URL → `[URL]`, @mention (termasuk `@user_<hash>`) → `[USER]`, spasi dirapikan. Tanpa huruf kecil, hapus emoji, normalisasi slang, atau stopword; itu diputuskan per teknik di tahap analisis dari kolom `text` asli |
+| Simpan | `processed/dataset_vNN.parquet` (analisis), `.csv` (Excel/anotasi), `.metadata.json` (asal-usul), `.report.md` (angka C4/C5). Versi lama tidak ditimpa |
+
+Kolom tambahan:
+
+| Kolom | Jenis | Arti |
+|---|---|---|
+| `text_clean` | | Teks untuk analisis (lihat di atas) |
+| `flag_text_missing` | eksklusi | Teks kosong atau hanya penanda media, mis. `[Foto]` |
+| `flag_non_indonesian` | eksklusi | Kode `language` jelas bukan Indonesia **dan** teks minimal 3 kata (lihat catatan bahasa) |
+| `flag_mention_only` | eksklusi | Isinya hanya @mention, boleh disertai emoji atau tanda baca (C1) |
+| `flag_repeated_by_author` | eksklusi | Komentar ganda (C1): teks sama dari `author_hash` yang sama di platform yang sama. Hanya comment/reply/quote; kemunculan paling awal tidak ditandai; teks sama dari akun berbeda tidak ditandai |
+| `flag_out_of_period` | eksklusi | `created_at` di luar `periode` (UTC, sama dengan scraper). Scraper hanya menyaring unggahan, jadi komentar yang ditulis setelah periode tertangkap di sini |
+| `flag_created_at_invalid` | eksklusi | Waktu tidak terbaca |
+| `flag_author_not_hashed` | eksklusi | `author_hash` bukan 16 karakter hex; nilainya dikosongkan |
+| `flag_item_type_invalid` | eksklusi | `item_type` di luar `post`/`comment`/`reply`/`quote` |
+| `flag_parent_missing` | info | comment/reply/quote tanpa `parent_id` |
+| `flag_conversation_missing` | info | Record X tanpa `conversation_id` (RQ3) |
+| `flag_negative_count` | info | Angka engagement negatif; nilainya dikosongkan (nol tetap nol) |
+| `eligible` | | Tidak terkena flag eksklusi mana pun |
+
+**Catatan bahasa.** Kode bahasa dari platform tidak selalu bisa dipercaya
+(TikTok keliru untuk teks pendek, Instagram kosong). Kode `id` dan `in`
+dianggap Indonesia; `ms`, `jv`, `su`, `tl`, `und`, `zxx`, dan kode khusus X
+`qam`/`qct`/`qht`/`qme`/`qst` tidak ditandai karena sering tertukar dengan
+bahasa Indonesia informal atau tidak menunjukkan bahasa. Kode lain ditandai
+hanya bila teksnya minimal 3 kata (`--min-words-language`). Distribusi kode
+lengkap ada di `report.md` bagian 6.
+
+**Belum ditandai otomatis:** spam dan relevansi ("jelas membahas figur" di
+C1). Keduanya dibahas di C5 dan ditangani saat anotasi manual.
+
 ## Manifest tiap run
 
 Tiap run menulis `interim/<run_id>/manifest.json` berisi parameter yang
