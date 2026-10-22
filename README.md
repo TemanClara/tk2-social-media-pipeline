@@ -27,6 +27,7 @@ src/scrapers/            satu berkas per platform, plus _common.py (opsi run, re
 src/run_scrape.py        perintah untuk menjalankan scraping
 src/summarize_runs.py    rekap jumlah data seluruh run
 src/make_sample.py       cuplikan teranonimisasi untuk data/sample/ dan docs/evidence/
+src/process.py           gabung run penuh jadi dataset analisis + laporan (C4)
 tests/                   tes unit, tanpa jaringan dan tanpa biaya
 third_party/             salinan library omkarcloud untuk TikTok dan Instagram (MIT)
 data/raw/                respons asli dari platform — tidak di-commit
@@ -125,6 +126,7 @@ make scrape-x         # jalankan scraping X dengan opsi bawaan
 make scrape-tiktok    # jalankan scraping TikTok dengan opsi bawaan
 make scrape-instagram # jalankan scraping Instagram dengan opsi bawaan
 make stats            # rekap jumlah data seluruh run
+make process          # gabung run penuh jadi dataset analisis + laporan
 ```
 
 Atau langsung, misalnya uji kecil lalu run penuh:
@@ -165,6 +167,22 @@ Cuplikan teranonimisasi untuk bukti (`data/sample/` dan `docs/evidence/`):
 ```bash
 .venv/bin/python -m src.make_sample data/interim/<run_id>
 ```
+
+### Dari data mentah ke dataset analisis
+
+Setelah semua run penuh selesai:
+
+```bash
+make process
+```
+
+Hasilnya di `data/processed/`: `dataset_vNN.parquet` untuk analisis,
+`dataset_vNN.csv` untuk dibuka di Excel, `dataset_vNN.metadata.json` berisi
+asal-usul data, dan `dataset_vNN.report.md` berisi alur jumlah data, kriteria
+eksklusi per platform, sebaran waktu, bahasa, dan kelengkapan kolom. Angka C4
+dan C5 diambil dari `report.md`. Run uji (yang memakai `--limit`) otomatis
+tidak dipakai. Aturan lengkapnya ada di
+[`data/README.md`](data/README.md#dataset-processed-make-process).
 
 ## Keluaran
 

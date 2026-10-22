@@ -12,7 +12,7 @@ help:  ## Tampilkan daftar perintah
 setup:  ## Buat virtualenv dan pasang dependensi
 	$(PYTHON) -m venv $(VENV)
 	$(BIN)/pip install --upgrade pip
-	$(BIN)/pip install -e ".[scrapers]"
+	$(BIN)/pip install -e ".[scrapers,analysis]"
 	@test -f .env || cp .env.example .env
 	@echo "Selesai. Isi .env lalu jalankan: make smoke"
 
@@ -38,8 +38,11 @@ test:  ## Jalankan tes unit (tanpa jaringan)
 stats:  ## Rekap jumlah record per run (bahan C4/C5)
 	$(BIN)/python -m src.summarize_runs
 
+process:  ## Gabung semua run penuh jadi dataset analisis + laporan (C4)
+	$(BIN)/python -m src.process
+
 clean:  ## Hapus cache Python dan log
 	find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 	rm -rf logs/*.log
 
-.PHONY: help setup lock smoke test scrape-x scrape-tiktok scrape-instagram stats clean
+.PHONY: help setup lock smoke test scrape-x scrape-tiktok scrape-instagram stats process clean
