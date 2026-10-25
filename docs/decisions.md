@@ -74,17 +74,26 @@ setelah diambil dan dihitung sebagai `out_of_period` di manifest.
 
 ## 4. Ketentuan layanan dan robots.txt
 
-Diisi bersama Clara (C6). Catat tanggal pemeriksaan dan poin yang relevan.
-
 | Platform | Tanggal cek | Poin ToS yang relevan | robots.txt |
 |---|---|---|---|
-| X | | | |
-| TikTok | | | |
-| Instagram | | | |
+| X | 25 Okt 2026 | Terms of Service (berlaku 9 Okt 2026) melarang akses selain lewat "currently available, published interfaces", dan menegaskan "crawling or scraping the Services in any form, for any purpose without our prior written consent is expressly prohibited". Uji coba kita memakai X API v2 resmi (antarmuka yang dipublikasikan), sehingga tunduk pada Developer Agreement dan use case yang didaftarkan (±1.000 post, username di-hash, data mentah privat, laporan agregat) | `User-agent: *` → `Disallow: /` (semua bot selain yang disebut namanya dilarang), `Crawl-delay: 1`. Googlebot/Bingbot diizinkan sebagian; bot AI dan Meta dilarang. Berlaku untuk situs x.com, bukan untuk API resmi di `api.x.com` yang dipakai |
+| TikTok | 25 Okt 2026 | Terms of Service (Other Regions, diperbarui 1 Des 2025) melarang "use automated scripts to collect information from or otherwise interact with the Services". Adendum Indonesia: usia minimum pengguna 14 tahun. Research API hanya untuk institusi nirlaba di AS, EEA, UK, dan Swiss (batas 1.000 permintaan/hari), jadi tidak tersedia untuk kita | `User-agent: *` mengizinkan `/tag`, `/discover`, `/foryou`, `/share`; melarang `/search?`, `/search/video?`, `/search/user?q=`, `/embed/@`, `/auth`, `/link`. `/explore` dan endpoint `/api/…` tidak disebut. Bot AI (GPTBot, ClaudeBot, CCBot, Bytespider, dll.) dilarang sepenuhnya (`Disallow: /`) |
+| Instagram | 25 Okt 2026 | Terms of Use (tanggal revisi tidak tercantum di halaman) melarang "accessing or collecting information in an automated way without our express permission, regardless of whether such automated access or collection is undertaken while logged-in". Juga dilarang menjual, melisensikan, atau membeli data yang diperoleh dari layanan. Jalur resmi untuk riset adalah Meta Content Library (bagian 1), yang tidak ditempuh karena waktu review | Catatan di awal berkas: pengumpulan data otomatis dilarang tanpa izin tertulis Instagram, dan bot yang diizinkan wajib mematuhi Meta Automated Data Collection Terms. `User-agent: *` → `Disallow: /`. Untuk bot yang diizinkan (mis. Googlebot, Bingbot), `/query/`, `/ajax/`, `/publicapi/`, `/direct/` dilarang. Library omkarcloud memakai `/graphql/query` dan halaman `/popular/<kata>/` |
 
-Hal yang perlu dinilai di sini: library TikTok dan Instagram bersifat tidak
-resmi, dan penggantian `BOOT_PATH` ke `/explore` di TikTok bisa dianggap
-mengakali halaman anti-bot.
+Penilaian untuk X:
+
+- **Patuh ToS.** Akses lewat API resmi berbayar adalah antarmuka yang dipublikasikan X, jadi tidak termasuk scraping yang dilarang. robots.txt tidak berlaku untuk API. Kewajiban yang tersisa mengikuti Developer Agreement dan use case yang didaftarkan.
+
+Penilaian untuk Instagram:
+
+- **Bertentangan dengan ToS dan robots.txt.** Instagram melarang pengumpulan otomatis tanpa izin, termasuk tanpa login, dan robots.txt melarang semua bot umum. Library omkarcloud tanpa login tetap termasuk pengumpulan otomatis tanpa izin.
+
+Penilaian untuk TikTok:
+
+- **Scraping tidak resmi.** Bertentangan dengan ToS. Dipakai karena tidak ada jalur resmi untuk institusi di Indonesia, datanya publik tanpa login, cakupannya terbatas (153 video; 21.650 record pada dataset_v04), dan tujuannya riset akademik nonkomersial. Dibahas terbuka di C6 dengan rujukan pedoman etika AoIR (2020).
+- **robots.txt.** Scraper tidak membuka halaman yang dilarang. Pencarian kata kunci memakai endpoint API `/api/search/item/full/`, bukan halaman `/search?`, jadi secara harfiah tidak melanggar. Namun fungsinya serupa dengan halaman pencarian yang dilarang, dan hal ini dicatat di sini agar transparan.
+- **`BOOT_PATH` → `/explore`.** Halaman bawaan library (`/@tiktok`) dijawab dengan halaman anti-bot dari IP Indonesia. `/explore` adalah halaman publik biasa dan tidak dilarang robots.txt, tetapi tujuannya memang menghindari halaman anti-bot. Ditambah peniruan sidik jari TLS Chrome oleh curl_cffi, ini termasuk area abu-abu. Dinilai **dapat diterima dengan batas**: tanpa akun, tanpa proxy (`TIKTOK_PROXY` tidak diisi), tanpa penyelesaian CAPTCHA, jeda acak antarpermintaan, dan cakupan terbatas. Ditulis terbuka di C3 dan C6.
+- **Data pengguna.** `data/raw/` menyimpan respons apa adanya, termasuk username, nama tampilan, dan foto profil. `data/interim/` dan `data/processed/` hanya memuat `author_hash`, dengan @mention disamarkan (`--mask-mentions`). Ketiga folder tidak di-commit. Yang dibagikan ke tim lewat Drive privat hanya `data/processed/`; `data/raw/` tidak dibagikan dan dihapus setelah penelitian selesai.
 
 ## 5. Hal yang masih terbuka
 
