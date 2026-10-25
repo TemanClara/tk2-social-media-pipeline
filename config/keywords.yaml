@@ -28,7 +28,9 @@ kata_kunci:
 
 hashtag:
   - "mayorteddy"
-  # TODO: lengkapi dari observasi awal
+  - "seskabteddy"
+  - "teddyindrawijaya"
+  - "letkolteddy"
 
 akun_target:
   tiktok: []     # TODO: akun fanbase & akun media
@@ -40,6 +42,6 @@ bahasa:
   sertakan_non_indonesia: false  # TODO: putuskan di CP1
 
 volume_target:
-  tiktok: 0      # TODO: isi di CP1
+  tiktok: 1000
   instagram: 0
   x: 0

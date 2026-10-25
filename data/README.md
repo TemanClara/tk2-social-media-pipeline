@@ -72,7 +72,9 @@ Instagram tidak diambil.
 ## Dataset processed (`make process`)
 
 `src/process.py` menggabungkan semua run penuh di `interim/` menjadi satu
-dataset analisis. Record **tidak dihapus**; setiap kriteria eksklusi C1
+dataset analisis. Dataset akhir hanya berisi run TikTok (lihat
+`docs/decisions.md` bagian 6); bila ada run X atau Instagram di `interim/`,
+keluarkan dengan `--exclude-runs`. Record **tidak dihapus**; setiap kriteria eksklusi C1
 menjadi kolom `flag_*`, dan kolom `eligible` bernilai `true` bila record lolos
 semua kriteria. Untuk analisis, filter `eligible == true`.
 
@@ -104,7 +106,7 @@ Kolom tambahan:
 
 **Catatan bahasa.** Kode bahasa dari platform tidak selalu bisa dipercaya
 (TikTok keliru untuk teks pendek, Instagram kosong). Kode `id` dan `in`
-dianggap Indonesia; `ms`, `jv`, `su`, `tl`, `und`, `zxx`, dan kode khusus X
+dianggap Indonesia; `ms`, `jv`, `su`, `tl`, `und`, `un` (TikTok: bahasa tidak terdeteksi), `zxx`, dan kode khusus X
 `qam`/`qct`/`qht`/`qme`/`qst` tidak ditandai karena sering tertukar dengan
 bahasa Indonesia informal atau tidak menunjukkan bahasa. Kode lain ditandai
 hanya bila teksnya minimal 3 kata (`--min-words-language`). Distribusi kode
