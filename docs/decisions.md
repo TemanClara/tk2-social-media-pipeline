@@ -88,11 +88,42 @@ mengakali halaman anti-bot.
 
 ## 5. Hal yang masih terbuka
 
-- [ ] Sumber data RQ2 berubah dari desain TK-1: proposal menyebut komentar pada unggahan akun berita dan akun apresiasi, sedangkan scraper Instagram kini bawaannya mengambil unggahan per kata kunci dan hashtag (akun lewat `--with-accounts`). Perlu disepakati tim (C1) dan disesuaikan di laporan
-- [ ] Pengumpulan penuh dua tahun atau sampel per jendela peristiwa (keputusan CP1). Kode mendukung keduanya (`--window`).
-- [ ] Tafsiran `jendela_hari`: sesudah tanggal peristiwa (implementasi sekarang) atau di sekitarnya
-- [ ] Target volume per platform (dari C1), dan unit hitung TikTok/Instagram: unggahan atau komentar
-- [ ] Perlakuan konten non-Indonesia. X memakai `lang:id`; TikTok dan Instagram belum disaring, tetapi TikTok kini menyimpan `language`
-- [ ] Bias urutan: `--x-sort relevancy` dan `--tiktok-sort likes` mengutamakan konten populer; perlu dicatat di C3
-- [ ] Penyamaran @username di dalam teks (C4/C6): opsi `--mask-mentions` sudah tersedia, tinggal diputuskan dipakai atau tidak
-- [ ] Penyaringan bahasa: kolom `language` tersedia untuk X dan TikTok; Instagram tidak menyediakan kode bahasa
+- [x] ~~Sumber data RQ2 berubah dari desain TK-1~~ — gugur: RQ2 kini memakai komentar TikTok (bagian 6)
+- [x] Pengumpulan penuh dua tahun atau sampel per jendela peristiwa — **penuh** (`--window periode`). Untuk TikTok, `peristiwa` hanya membuang hasil di luar jendela setelah diambil, tidak mengubah apa yang dicari (lihat `docs/scrapers.md`), sehingga tidak menghemat permintaan
+- [ ] Tafsiran `jendela_hari`: sesudah tanggal peristiwa (implementasi sekarang) atau di sekitarnya. Tidak berpengaruh selama memakai `periode`
+- [x] Target volume — ±1.000 komentar TikTok berbahasa Indonesia yang `eligible`, 300 dianotasi manual (C1). Unit hitung: komentar. `volume_target` di config hanya catatan; volume diatur lewat `--max-pages` dan `--comment-pages`
+- [x] Perlakuan konten non-Indonesia — ditandai `flag_non_indonesian` di `src/process.py`, tidak dihapus (lihat `data/README.md`)
+- [ ] Bias urutan: `--tiktok-sort likes` dan ranking hashtag TikTok mengutamakan konten populer; perlu dicatat di C3/C5
+- [x] Penyamaran @username di dalam teks — **dipakai** (`--mask-mentions`) di run dataset akhir, untuk minimalisasi data (C6). Perlu dikonfirmasi Clara
+- [ ] `akun_target.tiktok` masih kosong (C1 baru menyebut nama media, belum handle TikTok); run dataset akhir tanpa `--with-accounts`, jadi konten dari akun fanbase hanya terjaring bila muncul di pencarian kata kunci atau hashtag
+
+## 6. Fokus satu platform: TikTok
+
+Diputuskan 25 Okt 2026. Dataset akhir hanya diambil dari TikTok.
+
+| Pertimbangan | TikTok | Instagram | X |
+|---|---|---|---|
+| Konten fan (video edit, kompilasi) untuk RQ1 | Ada: caption dan hashtag video | Ada, tetapi hanya ±20–30 top reels per kueri | Sedikit |
+| Komentar untuk RQ2 | Ada, ±50 per halaman | ±12–14 per halaman | Ada (balasan) |
+| Struktur tanggapan untuk RQ3 | Balasan komentar (`--tiktok-replies`) | Balasan tidak diambil | Balasan dan quote-tweet |
+| Kode bahasa | Deteksi otomatis TikTok | Tidak ada | Ada |
+| Biaya | Gratis | Gratis | ±$0,005 per post dibaca |
+
+Alasan: dua dari tiga RQ sudah bertumpu pada komentar dan konten fan TikTok,
+dan TikTok menyediakan balasan komentar sehingga RQ3 tetap bisa dijawab di
+platform yang sama. Fokus pada satu platform juga membuat konteks percakapan
+seragam untuk anotasi dan analisis.
+
+Akibatnya:
+- RQ3 dirumuskan ulang dari "balasan dan quote-tweet di X" menjadi "utas
+  balasan komentar TikTok". "Kelompok penggemar" diganti "pengguna yang
+  mengekspresikan dukungan", karena di TikTok tidak ada keanggotaan kelompok
+  yang bisa diamati.
+- Komentar kritis baru dapat dikenali setelah anotasi manual, sehingga utas
+  balasan untuk RQ3 dipilih dari dataset setelah anotasi.
+- Temuan hanya berlaku untuk TikTok; bias algoritma rekomendasi dan
+  demografi pengguna TikTok membatasi generalisasi (C5).
+- Kode bahasa hanya dari deteksi otomatis TikTok, yang keliru untuk teks
+  pendek (C5).
+- Scraper X dan Instagram tetap di repo beserta bukti ujinya, tetapi run-nya
+  tidak masuk dataset akhir.

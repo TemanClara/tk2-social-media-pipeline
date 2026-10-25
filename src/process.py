@@ -41,7 +41,9 @@ MEDIA_PLACEHOLDER = re.compile(r"(?:\s*\[(?:foto|photo|gambar|image|stiker|stick
 #                        pendek terlalu sering salah deteksi.
 # Distribusi kode lengkap tetap dilaporkan di report.md.
 INDONESIAN_LANG = frozenset({"id", "in"})
-AMBIGUOUS_LANG = frozenset({"ms", "jv", "su", "tl", "und", "zxx",
+# "un": TikTok memberi "un" bila bahasa tidak terdeteksi (6% komentar pada run
+# 25 Okt 2026), jadi bukan bahasa asing.
+AMBIGUOUS_LANG = frozenset({"ms", "jv", "su", "tl", "und", "un", "zxx",
                             "qam", "qct", "qht", "qme", "qst"})
 MIN_WORDS_FOR_LANGUAGE = 3
 
@@ -437,7 +439,26 @@ def render_report(frame, metadata: dict) -> str:
         rows.append([plat, len(sub), orphan])
     out.append(_table(["platform", "punya parent_id", "induk tidak ada di dataset"], rows))
 
-    out += ["", "## 9. Contoh baris eligible", "",
+    out += ["", "## 9. Konsentrasi komentar per video", "",
+            "Komentar (comment/reply) yang eligible dikelompokkan per `conversation_id` "
+            "(video). Konsentrasi tinggi berarti sampel didominasi beberapa video; "
+            "penting untuk bias sampling (C5) dan untuk memilih sampel anotasi.", ""]
+    rows = []
+    for plat in platforms:
+        sub = frame[(frame.platform == plat) & frame.eligible & (frame.item_type != "post")]
+        per_video = sub.groupby("conversation_id").size().sort_values(ascending=False)
+        total = int(per_video.sum())
+        if not total:
+            continue
+        top10pct = max(1, round(len(per_video) * 0.10))
+        rows.append([plat, len(per_video), total, int(per_video.median()), int(per_video.iloc[0]),
+                     f"{100 * per_video.iloc[:5].sum() / total:.0f}%",
+                     f"{100 * per_video.iloc[:top10pct].sum() / total:.0f}%"])
+    out.append(_table(["platform", "video berkomentar", "komentar eligible", "median/video",
+                       "terbanyak", "porsi 5 video teratas", "porsi 10% video teratas"], rows)
+               if rows else "Belum ada komentar eligible.")
+
+    out += ["", "## 10. Contoh baris eligible", "",
             "Teks disamarkan seperti `data/sample/` (@mention diganti, dipotong 80 karakter).", ""]
     rows = []
     for plat in platforms:

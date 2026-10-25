@@ -74,7 +74,7 @@ class LanguageTest(unittest.TestCase):
         self.assertFalse(is_non_indonesian("tr", "wkwkwk"))
 
     def test_indonesian_and_ambiguous_codes_not_flagged(self):
-        for code in ("id", "in", "ms", "tl", "jv", "und", "zxx", None):
+        for code in ("id", "in", "ms", "tl", "jv", "und", "un", "zxx", None):
             self.assertFalse(is_non_indonesian(code, "aku suka banget sama konten ini"), code)
 
 
@@ -239,7 +239,8 @@ class EndToEndTest(unittest.TestCase):
             meta = json.loads((processed / "dataset_v01.metadata.json").read_text(encoding="utf-8"))
             self.assertEqual(meta["steps"]["x"]["eligible"], 2)
             report = (processed / "dataset_v01.report.md").read_text(encoding="utf-8")
-            for heading in ("## 1. Run yang dipakai", "## 2. Alur jumlah data", "## 8. Relasi balasan"):
+            for heading in ("## 1. Run yang dipakai", "## 2. Alur jumlah data", "## 8. Relasi balasan",
+                            "## 9. Konsentrasi komentar per video", "## 10. Contoh baris eligible"):
                 self.assertIn(heading, report)
 
 

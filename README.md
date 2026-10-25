@@ -1,21 +1,25 @@
 # Pipeline Pengumpulan Data — Analitika Media Sosial (TK-2)
 
 Pengumpulan data percakapan publik mengenai **Teddy Indra Wijaya** di TikTok,
-Instagram, dan X, sebagai tindak lanjut proposal TK-1 "Analisis Hubungan
-Parasosial dan Fan Culture terhadap Figur Pemerintahan Non-Elektoral di Media
-Sosial".
+sebagai tindak lanjut proposal TK-1 "Analisis Hubungan Parasosial dan Fan
+Culture terhadap Figur Pemerintahan Non-Elektoral di Media Sosial".
 
-## Pertanyaan penelitian dan platformnya
+Dataset akhir hanya berasal dari **TikTok** (alasannya
+di [`docs/decisions.md`](docs/decisions.md#6-fokus-satu-platform-tiktok)).
+Scraper X dan Instagram tetap ada di repo dan sudah diuji, tetapi tidak dipakai
+untuk dataset akhir.
 
-| RQ | Pertanyaan ringkas | Platform utama | Data yang diambil |
-|---|---|---|---|
-| RQ1 | Praktik *fan culture* apa yang muncul dan bagaimana persebarannya | TikTok | Video per kata kunci dan hashtag beserta caption, metadata, dan komentar |
-| RQ2 | Bagaimana distribusi sentimen antara ekspresi penggemar dan wacana kritis | Instagram | Komentar pada unggahan per kata kunci dan hashtag; opsional dari akun berita dan akun apresiasi |
-| RQ3 | Bagaimana penggemar merespons kritik | X | Post, balasan, *quote-tweet*, dan ID percakapan |
+## Pertanyaan penelitian dan datanya
 
-Cara akses per platform: X lewat X API v2 resmi; TikTok dan Instagram lewat
-library open-source omkarcloud tanpa login (tidak resmi). Alasan pemilihannya
-ada di [`docs/decisions.md`](docs/decisions.md).
+| RQ | Pertanyaan ringkas | Data TikTok yang diambil |
+|---|---|---|
+| RQ1 | Praktik *fan culture* apa yang muncul dan bagaimana persebarannya menurut empat elemen *politicised fandom* | Video per kata kunci dan hashtag beserta caption, hashtag, metadata, dan komentar |
+| RQ2 | Bagaimana distribusi sentimen komentar, terbagi antara ekspresi bercorak *fan culture* dan wacana kritis | Komentar pada video yang sama |
+| RQ3 | Bagaimana pengguna yang mengekspresikan dukungan merespons komentar kritis dalam utas balasan | Balasan komentar (`item_type = reply`, `parent_id` = ID komentar) |
+
+Cara akses: library open-source omkarcloud tanpa login (tidak resmi), karena
+TikTok Research API tidak tersedia untuk Indonesia. Alasan pemilihannya ada di
+[`docs/decisions.md`](docs/decisions.md).
 
 ## Struktur folder
 
@@ -167,6 +171,36 @@ Cuplikan teranonimisasi untuk bukti (`data/sample/` dan `docs/evidence/`):
 ```bash
 .venv/bin/python -m src.make_sample data/interim/<run_id>
 ```
+
+### Pengumpulan dataset akhir (TikTok)
+
+Dua run, supaya data RQ1–RQ2 pasti lengkap dulu sebelum balasan (RQ3) yang
+memakan waktu lama:
+
+| Run | Perintah (opsi) | Untuk | Perkiraan |
+|---|---|---|---|
+| A | `--max-pages 3 --comment-pages 2 --mask-mentions` | Video dan komentar dari semua kata kunci dan hashtag (RQ1, RQ2) | ±300–550 permintaan, ±20–40 menit |
+| B | `--max-pages 1 --comment-pages 1 --tiktok-replies 1 --mask-mentions` | Balasan pada halaman komentar teratas dari video halaman pertama tiap sumber (RQ3) | ±1.000–2.000 permintaan, ±1–2 jam |
+
+Perkiraan kasar dari ±4 detik per permintaan pada run uji 15 Okt
+(`docs/evidence/`) dan jumlah video yang masuk periode pada uji 18 Okt;
+angka sebenarnya ada di `duration_seconds` manifest.
+Video dan komentar yang sudah diambil run A dilewati di run B (dicatat
+sebagai `duplicates`), jadi yang baru tertulis hanya balasan. Kedua run
+memakai `--window periode` (bawaan) dan `--tiktok-sort likes` (bawaan).
+
+Sebelum run A, hapus `data/raw/_seen_tiktok.txt` dan folder run uji lama di
+`data/raw/` serta `data/interim/` bila ada, supaya hash dan dedup dimulai
+bersih dengan `PSEUDONYM_SALT` final.
+
+Di Windows (PowerShell), ganti `.venv/bin/python` dengan
+`.venv\Scripts\python`, dan jalankan perintah `make` secara langsung, misalnya
+`.venv\Scripts\python -m src.process`.
+
+Run boleh dihentikan dengan Ctrl+C. Data yang sudah tertulis tetap tersimpan
+dan tetap dipakai `src.process` (status `interrupted` di manifest). Karena
+sumber ditelusuri berurutan (kata kunci dulu, lalu hashtag), run yang
+dihentikan di tengah membuat sumber terakhir kurang terwakili; catat di C5.
 
 ### Dari data mentah ke dataset analisis
 
