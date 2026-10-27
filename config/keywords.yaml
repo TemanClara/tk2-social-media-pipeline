@@ -33,13 +33,16 @@ hashtag:
   - "letkolteddy"
 
 akun_target:
-  tiktok: []     # TODO: akun fanbase & akun media
-  instagram: []  # TODO: akun berita & akun apresiasi
-  x: []
+  tiktok: []     # Belum diisi: handle TikTok akun fanbase/media belum ada di C1.
+                 # Dataset akhir dikumpulkan tanpa --with-accounts.
+  instagram: []  # Tidak dipakai (dataset akhir hanya TikTok)
+  x: []          # Tidak dipakai (dataset akhir hanya TikTok)
 
 bahasa:
   utama: "id"
-  sertakan_non_indonesia: false  # TODO: putuskan di CP1
+  sertakan_non_indonesia: false  # Dipakai filter lang: X. TikTok tidak disaring
+                                 # saat scraping; ditandai flag_non_indonesian
+                                 # di src/process.py
 
 volume_target:
   tiktok: 1000

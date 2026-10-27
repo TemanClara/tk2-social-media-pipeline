@@ -102,7 +102,7 @@ Penilaian untuk TikTok:
 - [ ] Tafsiran `jendela_hari`: sesudah tanggal peristiwa (implementasi sekarang) atau di sekitarnya. Tidak berpengaruh selama memakai `periode`
 - [x] Target volume — ±1.000 komentar TikTok berbahasa Indonesia yang `eligible`, 300 dianotasi manual (C1). Unit hitung: komentar. `volume_target` di config hanya catatan; volume diatur lewat `--max-pages` dan `--comment-pages`
 - [x] Perlakuan konten non-Indonesia — ditandai `flag_non_indonesian` di `src/process.py`, tidak dihapus (lihat `data/README.md`)
-- [ ] Bias urutan: `--tiktok-sort likes` dan ranking hashtag TikTok mengutamakan konten populer; perlu dicatat di C3/C5
+- [x] Bias urutan: `--tiktok-sort likes` dan ranking hashtag TikTok mengutamakan konten populer — dicatat di C5 (bersama konsentrasi komentar per video, `report.md` bagian 9)
 - [x] Penyamaran @username di dalam teks — **dipakai** (`--mask-mentions`) di run dataset akhir, untuk minimalisasi data (C6). Perlu dikonfirmasi Clara
 - [ ] `akun_target.tiktok` masih kosong (C1 baru menyebut nama media, belum handle TikTok); run dataset akhir tanpa `--with-accounts`, jadi konten dari akun fanbase hanya terjaring bila muncul di pencarian kata kunci atau hashtag
 

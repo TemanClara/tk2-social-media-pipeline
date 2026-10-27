@@ -1,19 +1,19 @@
 {
-  "run_id": "tiktok_20261025_144837",
+  "run_id": "tiktok_20261025_190404",
   "platform": "tiktok",
-  "started_at": "2026-10-25T07:48:37.078466+00:00",
-  "finished_at": "2026-10-25T08:00:58.448868+00:00",
+  "started_at": "2026-10-25T12:04:04.280605+00:00",
+  "finished_at": "2026-10-25T12:55:53.296593+00:00",
   "status": "completed",
   "params": {
     "limit": null,
     "batch_size": 500,
-    "max_pages": 3,
-    "comment_pages": 2,
+    "max_pages": 1,
+    "comment_pages": 1,
     "with_accounts": false,
     "window": "periode",
     "mask_mentions": true,
     "tiktok_sort": "likes",
-    "tiktok_replies": 0,
+    "tiktok_replies": 1,
     "request_delay_seconds": 2.0,
     "max_retries": 4
   },
@@ -40,7 +40,6 @@
       }
     ],
     "kata_kunci": [
-      "Teddy Indra Wijaya",
       "Mayor Teddy",
       "Letkol Teddy",
       "Seskab Teddy"
@@ -67,20 +66,22 @@
     }
   },
   "counts": {
-    "fetched": 10449,
-    "written": 10440,
-    "duplicates": 9,
+    "fetched": 9825,
+    "written": 3363,
+    "duplicates": 6462,
     "errors": 0,
-    "written_post": 146,
-    "written_comment": 10294,
-    "videos_seen": 594,
-    "out_of_period": 365,
-    "raw_pages": 273
+    "written_reply": 3181,
+    "written_comment": 179,
+    "written_post": 3,
+    "videos_seen": 171,
+    "out_of_period": 126,
+    "reply_page_cap_reached": 207,
+    "raw_pages": 1115
   },
   "environment": {
     "python": "3.12.10",
     "os": "Windows-11-10.0.26200-SP0",
     "git_commit": "38a6875"
   },
-  "duration_seconds": 741.4
+  "duration_seconds": 3109.0
 }
