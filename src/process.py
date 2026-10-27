@@ -22,6 +22,7 @@ VALID_PLATFORMS = ("x", "tiktok", "instagram")
 VALID_ITEM_TYPES = ("post", "comment", "reply", "quote")
 COUNT_FIELDS = ("like_count", "reply_count", "share_count", "view_count")
 ID_FIELDS = ("item_id", "parent_id", "conversation_id")
+NON_POST_TYPES = frozenset({"comment", "reply", "quote"})
 
 # hash_username() menghasilkan 16 karakter hex huruf kecil.
 HASH_PATTERN = re.compile(r"[0-9a-f]{16}")
@@ -198,6 +199,11 @@ def normalize(record: dict) -> dict:
             out[key] = None
     if not isinstance(out["hashtags"], list):
         out["hashtags"] = extract_hashtags(out["text"])
+    if out["item_type"] in NON_POST_TYPES:
+        # Tautan komentar/balasan membuka profil penulisnya, sehingga bisa
+        # mengenali ulang orang di balik author_hash (minimalisasi data, C6).
+        # Tautan aslinya tetap ada di data/interim.
+        out["url"] = None
     return out
 
 
@@ -537,8 +543,9 @@ def run(args, logger, run_id: str) -> int:
     metadata = {
         "dataset": stem,
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "description": "Dataset terpadu X, TikTok, Instagram setelah penggabungan run, dedup, "
-                       "dan penandaan kriteria eksklusi C1. Record tidak dihapus; filter kolom `eligible`.",
+        "description": "Dataset terpadu (platform: " + ", ".join(sorted(steps)) + ") setelah penggabungan "
+                       "run, dedup, dan penandaan kriteria eksklusi C1. Record tidak dihapus; filter kolom "
+                       "`eligible`. Kolom url dikosongkan untuk comment/reply/quote.",
         "script": "src/process.py",
         "git_commit": _git_commit(),
         "process_run_id": run_id,

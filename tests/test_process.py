@@ -153,6 +153,16 @@ class ProcessRecordsTest(unittest.TestCase):
         self.assertTrue(rows["img"]["flag_text_missing"])
         self.assertFalse(rows["emoji"]["flag_text_missing"])   # emoji membawa makna (Modul 6)
 
+    def test_comment_url_cleared_post_url_kept(self):
+        rows = by_id(process_records([
+            rec("v1", item_type="post", url="https://www.tiktok.com/@/video/v1"),
+            rec("c1", url="https://www.tiktok.com/@akun_asli/video/v1?comment=c1"),
+            rec("r1", item_type="reply", parent_id="c1", url="https://x/r1", author="akun_b"),
+        ], KEYWORDS)[0])
+        self.assertEqual(rows["v1"]["url"], "https://www.tiktok.com/@/video/v1")
+        self.assertIsNone(rows["c1"]["url"])
+        self.assertIsNone(rows["r1"]["url"])
+
     def test_missing_hashtags_column_filled_from_text(self):
         raw = rec("v1", item_type="post", text="Kompilasi #MayorTeddy #fyp")
         del raw["hashtags"]

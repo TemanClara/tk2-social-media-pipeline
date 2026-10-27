@@ -35,7 +35,7 @@ Berlaku sama di ketiga platform. Sumbernya `UNIFIED_FIELDS` di
 | `view_count` | angka | Jumlah tayang/putar | X: `impression_count` (belum diverifikasi di data nyata); TikTok: jumlah putar video; Instagram: jumlah putar reel. Kosong untuk komentar dan balasan |
 | `hashtags` | daftar teks | Hashtag yang muncul di `text`, huruf kecil tanpa `#`, tanpa duplikat | Diambil dari teks dengan pola yang sama di ketiga platform; daftar kosong bila tidak ada |
 | `language` | teks | Kode bahasa yang diberikan platform | X: `lang` (kode yang dipakai X belum diverifikasi di data nyata); TikTok: deteksi otomatis TikTok, bisa keliru untuk komentar pendek; Instagram: selalu kosong |
-| `url` | teks | Tautan ke unggahan asli | |
+| `url` | teks | Tautan ke unggahan asli | Di `processed/` dikosongkan untuk `comment`/`reply`/`quote`, karena tautannya membuka profil penulis |
 | `query` | teks | Kata kunci, hashtag, atau akun yang memunculkan record | Untuk menelusuri asal data |
 | `_scraped_at` | ISO 8601 | Waktu pengambilan | Ditambahkan otomatis |
 | `_run_id` | teks | ID run | Menghubungkan record ke `manifest.json` |
