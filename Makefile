@@ -21,7 +21,7 @@ lock:  ## Kunci versi persis yang sedang terpasang ke requirements.lock.txt
 	@echo "requirements.lock.txt diperbarui. Commit berkas ini."
 
 smoke:  ## Uji konfigurasi tanpa mengambil data sungguhan
-	$(BIN)/python -m src.run_scrape --platform x --limit 1 --dry-run
+	$(BIN)/python -m src.run_scrape --platform tiktok --dry-run
 
 scrape-x:  ## Jalankan scraping X
 	$(BIN)/python -m src.run_scrape --platform x

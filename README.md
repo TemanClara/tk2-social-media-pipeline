@@ -114,18 +114,19 @@ di-commit, anggota tim yang ingin lingkungan identik memasang dengan
    | `bahasa` | Filter `lang:` pada kueri X |
    | `volume_target` | Target jumlah data (belum dipakai kode, untuk rujukan laporan) |
 
-3. Cek kesiapan tanpa mengambil data (ganti `x` dengan `tiktok` atau
-   `instagram`). Yang diharapkan: baris terakhir `Dry-run lolos.`
+3. Cek kesiapan tanpa mengambil data (ganti `tiktok` dengan `x` atau
+   `instagram` untuk scraper lain). Yang diharapkan: baris terakhir
+   `Dry-run lolos.`
 
    ```bash
-   .venv/bin/python -m src.run_scrape --platform x --dry-run
+   .venv/bin/python -m src.run_scrape --platform tiktok --dry-run
    ```
 
 ## Menjalankan
 
 ```bash
 make test             # tes unit, tanpa jaringan dan tanpa biaya
-make smoke            # dry-run X: cek konfigurasi tanpa mengambil data
+make smoke            # dry-run TikTok: cek konfigurasi tanpa mengambil data
 make scrape-x         # jalankan scraping X dengan opsi bawaan
 make scrape-tiktok    # jalankan scraping TikTok dengan opsi bawaan
 make scrape-instagram # jalankan scraping Instagram dengan opsi bawaan
