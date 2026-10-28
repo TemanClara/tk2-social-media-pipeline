@@ -110,7 +110,6 @@ dataset akhir; untuk lingkungan yang identik, pasang dengan
    | `periode` | Rentang `--window periode` (bawaan) |
    | `peristiwa_pemicu` | Rentang `--window peristiwa`: tanggal tiap peristiwa dan `jendela_hari` |
    | `kata_kunci`, `hashtag` | Sumber pencarian di ketiga platform; di X digabung menjadi satu kueri |
-   | `akun_target` | Sumber tambahan TikTok/Instagram, hanya dipakai dengan `--with-accounts` |
    | `bahasa` | Filter `lang:` pada kueri X |
    | `volume_target` | Target jumlah data (catatan saja, tidak dibaca kode) |
 
