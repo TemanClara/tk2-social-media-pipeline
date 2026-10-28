@@ -1,9 +1,7 @@
 # docs/evidence
 
-Bukti bahwa scraping benar-benar dijalankan: tangkapan layar proses berjalan,
-cuplikan log, dan contoh keluaran per platform.
-
-Penamaan: `<platform>_<tanggal>_<keterangan>.png`
+Bukti bahwa scraping benar-benar dijalankan: manifest dan log tiap run, serta
+laporan tahap processing.
 
 ## Dataset akhir (TikTok, 25 Okt 2026)
 
@@ -46,11 +44,10 @@ python -m src.make_sample data/interim/<run_id>
 
 Catatan untuk run 15 Okt 2026:
 
-- Run uji memakai `PSEUDONYM_SALT` sementara karena salt tim belum diisi.
+- Run uji memakai `PSEUDONYM_SALT` sementara, bukan salt dataset akhir.
   Hash di cuplikan ini tidak akan sama dengan hash di dataset final.
 - Cuplikan disamarkan lebih jauh dari dataset: @mention di teks diganti
-  `@[pengguna]`, teks dipotong 80 karakter, kolom `url` dikosongkan. Aturan
-  ini perlu dikonfirmasi bersama C6.
+  `@[pengguna]`, teks dipotong 80 karakter, kolom `url` dikosongkan.
 - Cuplikan X dan Instagram 15 Okt dibuat sebelum kolom `view_count`,
   `hashtags`, dan `language` ditambahkan (18 Okt), jadi kolom itu kosong di
   sana. Cuplikan TikTok sudah memuatnya.
@@ -67,17 +64,3 @@ Catatan untuk run 15 Okt 2026:
   terbaru, semua post di run uji bertanggal 30 Sep 2026 (hari terakhir
   periode). Uji 18 Okt dengan `sort_order=relevancy` memberi 20 post yang
   tersebar dari Nov 2024 sampai Jun 2026.
-
-## Tangkapan layar (opsional)
-
-Ambil dengan `Cmd + Shift + 4` (macOS) atau `Win + Shift + S` (Windows), dan
-simpan ke folder ini dengan nama sesuai format di atas. Jangan ambil layar
-yang memperlihatkan isi `.env`, data mentah di `data/raw/`, atau username asli.
-
-| Nama berkas | Yang ditampilkan |
-|---|---|
-| `semua_<tanggal>_tes.png` | Terminal setelah `make test`, sampai baris `OK` |
-| `tiktok_<tanggal>_run.png` | Terminal saat `python -m src.run_scrape --platform tiktok --limit 20` berjalan, sampai baris `Statistik` |
-| `instagram_<tanggal>_run.png` | Sama, untuk `--platform instagram` |
-| `x_<tanggal>_run.png` | Sama, untuk `--platform x` |
-| `<platform>_<tanggal>_sample.png` | `data/sample/<platform>_sample.json` terbuka di VS Code |

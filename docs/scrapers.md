@@ -35,10 +35,8 @@ Berlaku untuk ketiga platform, dibaca dari `config/keywords.yaml`.
 Dengan isi `keywords.yaml` sekarang, `peristiwa` menghasilkan tiga rentang:
 20 Okt–3 Nov 2024, 25 Feb–11 Mar 2025, dan 13–27 Mei 2026.
 
-Tafsiran "sampai 14 hari sesudahnya" masih perlu dikonfirmasi ke C1, karena
-komentar di `keywords.yaml` menulis "di sekitar peristiwa". Kalau yang
-dimaksud sebelum dan sesudah, cukup ubah `date_ranges()` di
-`src/scrapers/_common.py`.
+Jendela dihitung sesudah tanggal peristiwa. Untuk memakai jendela sebelum dan
+sesudah peristiwa, ubah `date_ranges()` di `src/scrapers/_common.py`.
 
 Untuk X, rentang dikirim ke API, jadi pencariannya memang di tanggal itu.
 Untuk TikTok dan Instagram, pencariannya tidak bisa diberi tanggal; rentang
@@ -99,8 +97,7 @@ supaya objek pengguna tidak ikut ditagih.
 Dengan `--x-sort recency`, run `--window periode` dan batas 2.000 post
 kemungkinan besar hanya mencakup minggu-minggu terakhir periode. Bawaan
 `relevancy` menyebar hasil di sepanjang periode, tapi mengutamakan post yang
-dianggap X paling relevan, biasanya yang interaksinya tinggi. Bias ini perlu
-dicatat di C3.
+dianggap X paling relevan, biasanya yang interaksinya tinggi.
 
 **Pemetaan kolom:**
 
@@ -161,8 +158,7 @@ kunci; video per hashtag selalu mengikuti ranking TikTok.
 
 (Uji 18 Okt 2026, 3 halaman per kata kunci.) Dengan `relevance`, hampir semua
 video berasal dari bulan terakhir, setelah periode selesai. `likes`
-mengutamakan video populer, jadi video dari akun kecil bisa kurang terwakili;
-bias ini perlu dicatat di C3.
+mengutamakan video populer, jadi video dari akun kecil bisa kurang terwakili.
 
 **Catatan teknis.** Sebelum mencari, library membuka satu halaman tiktok.com
 untuk mendapatkan cookie sesi. Bawaannya halaman `/@tiktok`, yang dari IP
@@ -328,7 +324,7 @@ make test
 tetap berbayar; pasang batas baca rendah dulu, misalnya `X_MAX_POSTS_READ=60`
 di `.env`.
 
-**Run penuh** (angka hanya contoh, sesuaikan dengan target C1):
+**Run penuh** (angka hanya contoh; parameter dataset akhir ada di README):
 
 ```bash
 .venv/bin/python -m src.run_scrape --platform x --window peristiwa
@@ -362,7 +358,7 @@ di `.env`.
 
 Semua nilai opsi tercatat di `manifest.json` bagian `params`.
 
-**Rekap semua run** (bahan angka C1, C4, C5):
+**Rekap semua run:**
 
 ```bash
 make stats
@@ -385,12 +381,11 @@ bisa diubah.
 - Kolom `view_count` (`impression_count`) dan `language` (`lang`) untuk X:
   belum ada run X sejak kolom ini ditambahkan, jadi isi dan kode bahasanya
   belum dilihat di data nyata.
-- `--mask-mentions` pada data nyata: uji 18 Okt (80 record TikTok dan
-  Instagram) kebetulan tidak memuat @username; perilakunya diuji dengan tes unit.
 - `--x-sort relevancy` lewat scraper secara utuh. Yang sudah diuji baru satu
   permintaan pencarian langsung (20 post); pengiriman parameternya oleh
   scraper diuji dengan tes unit.
 - `--with-accounts` untuk TikTok dan Instagram dengan akun sungguhan, karena
   `akun_target` masih kosong.
-- Run panjang (ratusan permintaan beruntun). Batas sebelum diblokir TikTok
-  atau Instagram belum diketahui.
+- Run panjang ke Instagram. Untuk TikTok, run dataset akhir (25 Okt 2026,
+  lebih dari 2.000 permintaan) berjalan tanpa diblokir; kegagalan yang
+  tercatat berasal dari gangguan jaringan.

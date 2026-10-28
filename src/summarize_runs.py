@@ -1,7 +1,7 @@
 """Rekap seluruh run menjadi satu tabel.
 
-Dipakai sebagai sumber tunggal angka jumlah data yang dipakai di C1, C4, C5,
-dan README, supaya tidak ada angka yang berbeda antarbagian laporan.
+Dipakai sebagai sumber tunggal angka jumlah data, supaya angka yang dilaporkan
+selalu bisa ditelusuri ke manifest run.
 
     python -m src.summarize_runs
 """

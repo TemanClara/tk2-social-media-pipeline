@@ -1,7 +1,7 @@
 """Kontrak yang dipakai bersama oleh scraper ketiga platform.
 
 Setiap scraper mengembalikan dict dengan kunci yang sama supaya modul
-deduplikasi dan pemetaan skema (bagian C4) tidak perlu menangani tiga
+deduplikasi dan pemetaan skema tidak perlu menangani tiga
 bentuk data yang berbeda.
 """
 
@@ -10,16 +10,15 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Iterator
 
-# Skema terpadu lintas platform.
-# SUMBER: skema dataset (Nafia, C4) dan daftar atribut (Azzahra, C1).
-# Samakan isinya setelah CP1; ubah di sini saja, jangan di tiap scraper.
+# Skema terpadu lintas platform. Ubah di sini saja, jangan di tiap scraper,
+# lalu perbarui kamus data di data/README.md.
 UNIFIED_FIELDS = [
     "platform",        # "tiktok" | "instagram" | "x"
     "item_type",       # "post" | "comment" | "reply" | "quote"
     "item_id",         # ID unik di platform asal
     "parent_id",       # ID unggahan/komentar induk; None bila post utama
     "conversation_id", # ID percakapan; dipakai untuk RQ3 di X
-    "author_hash",     # username yang sudah dipseudonimkan (lihat C6)
+    "author_hash",     # username yang sudah dipseudonimkan
     "text",
     "created_at",      # ISO 8601
     "like_count",

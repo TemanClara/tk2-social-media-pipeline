@@ -16,7 +16,6 @@ membawa ke identitas pengguna:
       --mask-mentions (token @user_<hash> pun disamarkan untuk repo publik)
     - teks dipotong (bawaan 80 karakter), sesuai janji "kutipan pendek"
     - kolom url dikosongkan, karena tautan komentar membuka profil penulisnya
-Aturan ini perlu dikonfirmasi bersama C6 (Clara).
 """
 
 from __future__ import annotations

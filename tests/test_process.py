@@ -151,7 +151,7 @@ class ProcessRecordsTest(unittest.TestCase):
     def test_media_placeholder_counts_as_no_text(self):
         rows = by_id(process_records([rec("img", text="[Foto]"), rec("emoji", text="😍😍😍")], KEYWORDS)[0])
         self.assertTrue(rows["img"]["flag_text_missing"])
-        self.assertFalse(rows["emoji"]["flag_text_missing"])   # emoji membawa makna (Modul 6)
+        self.assertFalse(rows["emoji"]["flag_text_missing"])   # emoji membawa makna
 
     def test_comment_url_cleared_post_url_kept(self):
         rows = by_id(process_records([

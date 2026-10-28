@@ -1,8 +1,7 @@
 # data/sample
 
 Berisi contoh kecil keluaran scraping yang **sudah teranonimisasi**, sebagai
-bukti bahwa pipeline berjalan (lihat tugas C3: simpan contoh bukti scraping
-per platform).
+bukti bahwa pipeline berjalan.
 
 Aturan:
 

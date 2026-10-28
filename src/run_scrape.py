@@ -90,7 +90,7 @@ def dry_run(args, settings: Settings, keywords: dict, logger) -> int:
     logger.info("Akun target %s: %d%s", platform, len(akun),
                 "" if args.with_accounts or platform == "x" else " (tidak dipakai tanpa --with-accounts)")
     if args.with_accounts and not akun:
-        logger.warning("--with-accounts dipakai tapi akun_target.%s masih kosong — menunggu C1.", platform)
+        logger.warning("--with-accounts dipakai tapi akun_target.%s masih kosong.", platform)
 
     for name in REQUIRED_SECRETS[platform]:
         if os.getenv(name):

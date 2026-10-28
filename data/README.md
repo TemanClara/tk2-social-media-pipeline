@@ -6,7 +6,7 @@ Tiga lapis, masing-masing dengan peran berbeda.
 |---|---|---|
 | `raw/` | Respons asli dari platform, dikompresi apa adanya, belum diubah sama sekali | Tidak |
 | `interim/` | Record yang sudah dipetakan ke skema terpadu, format JSONL, plus `manifest.json` tiap run | Tidak |
-| `processed/` | Dataset siap analisis hasil pembersihan dan deduplikasi (bagian C4) | Tidak |
+| `processed/` | Dataset siap analisis hasil pembersihan dan deduplikasi | Tidak |
 | `sample/` | Contoh kecil teranonimisasi sebagai bukti pipeline berjalan | Ya |
 
 Alasan `raw/` dipisah dari `interim/`: pengambilan ulang data media sosial
@@ -26,7 +26,7 @@ Berlaku sama di ketiga platform. Sumbernya `UNIFIED_FIELDS` di
 | `item_id` | teks | ID unik di platform asal | Dipakai untuk deduplikasi |
 | `parent_id` | teks | ID unggahan atau komentar induk | Kosong bila unggahan utama |
 | `conversation_id` | teks | ID unggahan paling atas di percakapan itu | Di X, `quote` punya `conversation_id` sendiri; wajib ada di X untuk RQ3 |
-| `author_hash` | teks | Username yang sudah dipseudonimkan | Hash SHA-256 bergaram, lihat C6 |
+| `author_hash` | teks | Username yang sudah dipseudonimkan | Hash SHA-256 bergaram |
 | `text` | teks | Isi unggahan atau komentar | Dengan `--mask-mentions`, tiap @username diganti `@user_<hash>` |
 | `created_at` | ISO 8601 | Waktu unggah | |
 | `like_count` | angka | Jumlah suka | Kosong bila platform tidak menyediakan |
@@ -74,7 +74,7 @@ Instagram tidak diambil.
 `src/process.py` menggabungkan semua run penuh di `interim/` menjadi satu
 dataset analisis. Dataset akhir hanya berisi run TikTok (lihat
 `docs/decisions.md` bagian 6); bila ada run X atau Instagram di `interim/`,
-keluarkan dengan `--exclude-runs`. Record **tidak dihapus**; setiap kriteria eksklusi C1
+keluarkan dengan `--exclude-runs`. Record **tidak dihapus**; setiap kriteria eksklusi
 menjadi kolom `flag_*`, dan kolom `eligible` bernilai `true` bila record lolos
 semua kriteria. Untuk analisis, filter `eligible == true`.
 
@@ -84,7 +84,7 @@ semua kriteria. Untuk analisis, filter `eligible == true`.
 | Buang | Hanya record tanpa `item_id` atau dengan platform tak dikenal |
 | Dedup | Kunci `(platform, item_id)`; disimpan versi `_scraped_at` terbaru. Pengaman bila run dari laptop berbeda digabung, karena `_seen_<platform>.txt` hanya berlaku di satu laptop |
 | `text_clean` | NFKC, URL → `[URL]`, @mention (termasuk `@user_<hash>`) → `[USER]`, spasi dirapikan. Tanpa huruf kecil, hapus emoji, normalisasi slang, atau stopword; itu diputuskan per teknik di tahap analisis dari kolom `text` asli |
-| Simpan | `processed/dataset_vNN.parquet` (analisis), `.csv` (Excel/anotasi), `.metadata.json` (asal-usul), `.report.md` (angka C4/C5). Versi lama tidak ditimpa |
+| Simpan | `processed/dataset_vNN.parquet` (analisis), `.csv` (Excel/anotasi), `.metadata.json` (asal-usul), `.report.md` (ringkasan jumlah data). Versi lama tidak ditimpa |
 
 Kolom tambahan:
 
@@ -93,8 +93,8 @@ Kolom tambahan:
 | `text_clean` | | Teks untuk analisis (lihat di atas) |
 | `flag_text_missing` | eksklusi | Teks kosong atau hanya penanda media, mis. `[Foto]` |
 | `flag_non_indonesian` | eksklusi | Kode `language` jelas bukan Indonesia **dan** teks minimal 3 kata (lihat catatan bahasa) |
-| `flag_mention_only` | eksklusi | Isinya hanya @mention, boleh disertai emoji atau tanda baca (C1) |
-| `flag_repeated_by_author` | eksklusi | Komentar ganda (C1): teks sama dari `author_hash` yang sama di platform yang sama. Hanya comment/reply/quote; kemunculan paling awal tidak ditandai; teks sama dari akun berbeda tidak ditandai |
+| `flag_mention_only` | eksklusi | Isinya hanya @mention, boleh disertai emoji atau tanda baca |
+| `flag_repeated_by_author` | eksklusi | Komentar ganda: teks sama dari `author_hash` yang sama di platform yang sama. Hanya comment/reply/quote; kemunculan paling awal tidak ditandai; teks sama dari akun berbeda tidak ditandai |
 | `flag_out_of_period` | eksklusi | `created_at` di luar `periode` (UTC, sama dengan scraper). Scraper hanya menyaring unggahan, jadi komentar yang ditulis setelah periode tertangkap di sini |
 | `flag_created_at_invalid` | eksklusi | Waktu tidak terbaca |
 | `flag_author_not_hashed` | eksklusi | `author_hash` bukan 16 karakter hex; nilainya dikosongkan |
@@ -112,13 +112,12 @@ bahasa Indonesia informal atau tidak menunjukkan bahasa. Kode lain ditandai
 hanya bila teksnya minimal 3 kata (`--min-words-language`). Distribusi kode
 lengkap ada di `report.md` bagian 6.
 
-**Belum ditandai otomatis:** spam dan relevansi ("jelas membahas figur" di
-C1). Keduanya dibahas di C5 dan ditangani saat anotasi manual.
+**Belum ditandai otomatis:** spam dan relevansi terhadap figur. Keduanya
+dinilai saat anotasi manual.
 
 ## Manifest tiap run
 
 Tiap run menulis `interim/<run_id>/manifest.json` berisi parameter yang
 dipakai, salinan isi `config/keywords.yaml` saat itu, jumlah data yang masuk,
 status akhir, serta versi Python dan commit kode. Jalankan `make stats` untuk
-merekap seluruh run menjadi satu tabel. Angka di laporan sebaiknya diambil
-dari sini, bukan diketik ulang, supaya C1, C4, C5, dan README tidak berbeda.
+merekap seluruh run menjadi satu tabel.

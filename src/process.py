@@ -31,7 +31,7 @@ WORD_PATTERN = re.compile(r"[^\W\d_]{2,}")
 MEDIA_PLACEHOLDER = re.compile(r"(?:\s*\[(?:foto|photo|gambar|image|stiker|sticker|gif|video)\]\s*)+",
                                re.IGNORECASE)
 
-# --- Bahasa (kriteria inklusi C1: hanya berbahasa Indonesia) ---------------
+# --- Bahasa (kriteria inklusi: hanya berbahasa Indonesia) --------------------
 #   - INDONESIAN       : dianggap bahasa Indonesia ("in" adalah kode lama X).
 #   - AMBIGUOUS        : tidak ditandai. Melayu, Jawa, Sunda, dan Tagalog kerap
 #                        tertukar dengan bahasa Indonesia informal; "und",
@@ -51,10 +51,10 @@ MIN_WORDS_FOR_LANGUAGE = 3
 # Kriteria eksklusi: record dengan salah satu flag ini tidak `eligible`.
 EXCLUSION_FLAGS = {
     "flag_text_missing": "Teks kosong",
-    "flag_non_indonesian": "Bukan bahasa Indonesia (C1)",
-    "flag_mention_only": "Hanya menandai pengguna lain (C1)",
-    "flag_repeated_by_author": "Komentar ganda dari akun yang sama (C1)",
-    "flag_out_of_period": "Di luar periode (C1)",
+    "flag_non_indonesian": "Bukan bahasa Indonesia",
+    "flag_mention_only": "Hanya menandai pengguna lain",
+    "flag_repeated_by_author": "Komentar ganda dari akun yang sama",
+    "flag_out_of_period": "Di luar periode",
     "flag_created_at_invalid": "Waktu tidak terbaca",
     "flag_author_not_hashed": "author_hash bukan hash (privasi)",
     "flag_item_type_invalid": "item_type tidak dikenal",
@@ -140,7 +140,7 @@ def clean_text(text: str | None) -> str | None:
                  @user_<hash> dari --mask-mentions) -> [USER], spasi dirapikan.
     Tidak      : huruf kecil, hapus tanda baca, hapus emoji, normalisasi slang,
                  stopword, stemming. Sentiment analysis (RQ2) butuh negasi,
-                 emoji, dan penekanan seperti "baguuus" (Modul 6); langkah
+                 emoji, dan penekanan seperti "baguuus"; langkah
                  tersebut diputuskan per teknik di tahap analisis, dari kolom
                  `text` asli yang tetap disimpan.
     """
@@ -201,7 +201,7 @@ def normalize(record: dict) -> dict:
         out["hashtags"] = extract_hashtags(out["text"])
     if out["item_type"] in NON_POST_TYPES:
         # Tautan komentar/balasan membuka profil penulisnya, sehingga bisa
-        # mengenali ulang orang di balik author_hash (minimalisasi data, C6).
+        # mengenali ulang orang di balik author_hash (minimalisasi data).
         # Tautan aslinya tetap ada di data/interim.
         out["url"] = None
     return out
@@ -212,7 +212,7 @@ def process_records(records: list[dict], keywords: dict,
     """Inti tahap processing, tanpa membaca atau menulis berkas.
 
     Mengembalikan (rows, steps). `steps[platform]` mencatat jumlah record di
-    setiap langkah, untuk tabel alur data di C4.
+    setiap langkah, untuk tabel alur data di report.md.
     """
     steps: dict[str, Counter] = defaultdict(Counter)
 
@@ -268,7 +268,7 @@ def process_records(records: list[dict], keywords: dict,
                 rec[key] = None  # tidak valid; nol tetap nol (nol != kosong)
                 rec["flag_negative_count"] = True
 
-    # Komentar ganda (C1): teks sama dari akun sama di platform yang sama.
+    # Komentar ganda: teks sama dari akun sama di platform yang sama.
     # Hanya comment/reply/quote; caption post yang sama dari satu akun bisa
     # menyertai video berbeda dan tetap dihitung sebagai karya terpisah (RQ1).
     # Kemunculan paling awal dipertahankan. Teks sama dari akun BERBEDA tidak
@@ -345,7 +345,7 @@ def _table(headers: list[str], rows: list[list]) -> str:
 
 
 def render_report(frame, metadata: dict) -> str:
-    """Ringkasan dataset untuk C4 dan C5. Semua angka dihitung dari `frame`."""
+    """Ringkasan dataset. Semua angka dihitung dari `frame`."""
     import pandas as pd
 
     from src.make_sample import redact
@@ -448,7 +448,7 @@ def render_report(frame, metadata: dict) -> str:
     out += ["", "## 9. Konsentrasi komentar per video", "",
             "Komentar (comment/reply) yang eligible dikelompokkan per `conversation_id` "
             "(video). Konsentrasi tinggi berarti sampel didominasi beberapa video; "
-            "penting untuk bias sampling (C5) dan untuk memilih sampel anotasi.", ""]
+            "penting untuk membaca bias sampling dan memilih sampel anotasi.", ""]
     rows = []
     for plat in platforms:
         sub = frame[(frame.platform == plat) & frame.eligible & (frame.item_type != "post")]
@@ -481,7 +481,7 @@ def render_report(frame, metadata: dict) -> str:
 # --------------------------------------------------------------- main
 
 def parse_args(argv=None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Processing interim -> processed (C4)")
+    parser = argparse.ArgumentParser(description="Processing interim -> processed")
     parser.add_argument("--runs", nargs="+", default=None, help="Hanya pakai run_id ini")
     parser.add_argument("--exclude-runs", nargs="+", default=None, help="Jangan pakai run_id ini")
     parser.add_argument("--include-test-runs", action="store_true",
@@ -544,7 +544,7 @@ def run(args, logger, run_id: str) -> int:
         "dataset": stem,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "description": "Dataset terpadu (platform: " + ", ".join(sorted(steps)) + ") setelah penggabungan "
-                       "run, dedup, dan penandaan kriteria eksklusi C1. Record tidak dihapus; filter kolom "
+                       "run, dedup, dan penandaan kriteria eksklusi. Record tidak dihapus; filter kolom "
                        "`eligible`. Kolom url dikosongkan untuk comment/reply/quote.",
         "script": "src/process.py",
         "git_commit": _git_commit(),

@@ -2,7 +2,7 @@
 
 Username diganti hash agar identitas pengguna tidak tersimpan dalam dataset,
 sementara analisis yang membutuhkan "akun yang sama atau bukan" tetap bisa
-dilakukan (lihat C6 Etika).
+dilakukan.
 
 SALT dibaca dari .env sehingga hash tidak dapat dibalik oleh pihak luar yang
 hanya memegang dataset.
