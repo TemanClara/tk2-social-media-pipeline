@@ -31,17 +31,9 @@ hashtag:
   - "teddyindrawijaya"
   - "letkolteddy"
 
-akun_target:
-  tiktok: []     # Belum diisi: handle TikTok akun fanbase/media belum ditetapkan.
-                 # Dataset akhir dikumpulkan tanpa --with-accounts.
-  instagram: []  # Tidak dipakai (dataset akhir hanya TikTok)
-  x: []          # Tidak dipakai (dataset akhir hanya TikTok)
-
 bahasa:
   utama: "id"
-  sertakan_non_indonesia: false  # Dipakai filter lang: X. TikTok tidak disaring
-                                 # saat scraping; ditandai flag_non_indonesian
-                                 # di src/process.py
+  sertakan_non_indonesia: false  
 
 volume_target:
   tiktok: 1000

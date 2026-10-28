@@ -110,7 +110,6 @@ dataset akhir; untuk lingkungan yang identik, pasang dengan
    | `periode` | Rentang `--window periode` (bawaan) |
    | `peristiwa_pemicu` | Rentang `--window peristiwa`: tanggal tiap peristiwa dan `jendela_hari` |
    | `kata_kunci`, `hashtag` | Sumber pencarian di ketiga platform; di X digabung menjadi satu kueri |
-   | `akun_target` | Sumber tambahan TikTok/Instagram, hanya dipakai dengan `--with-accounts` |
    | `bahasa` | Filter `lang:` pada kueri X |
    | `volume_target` | Target jumlah data (catatan saja, tidak dibaca kode) |
 
@@ -300,6 +299,8 @@ Penilaian ketentuan layanan dan robots.txt per platform ada di
 
 ## Penyusun
 
-Azzahra Salsabila, Clara Aurelia Setiady, Kania Almyra Bilqist, dan Nafia
-Levana Aulia (Program Studi Sistem Informasi). Tugas Kelompok 2 mata kuliah
+1. Azzahra Salsabila (2306219934)
+2. Clara Aurelia Setiady (2306217304)
+3. Kania Almyra Bilqist (2306216996)
+4. Nafia Levana Aulia (2306224556)
 CSIE604284 Analitika Media Sosial.
