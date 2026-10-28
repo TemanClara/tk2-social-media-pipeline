@@ -299,6 +299,8 @@ Penilaian ketentuan layanan dan robots.txt per platform ada di
 
 ## Penyusun
 
-Azzahra Salsabila, Clara Aurelia Setiady, Kania Almyra Bilqist, dan Nafia
-Levana Aulia (Program Studi Sistem Informasi). Tugas Kelompok 2 mata kuliah
+1. Azzahra Salsabila (2306219934)
+2. Clara Aurelia Setiady (2306217304)
+3. Kania Almyra Bilqist (2306216996)
+4. Nafia Levana Aulia (2306224556)
 CSIE604284 Analitika Media Sosial.
