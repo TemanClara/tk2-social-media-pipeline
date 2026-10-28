@@ -1,4 +1,4 @@
-# Pipeline Pengumpulan Data — Analitika Media Sosial (TK-2)
+# Pipeline Pengumpulan Data Analitika Media Sosial (TK-2)
 
 Pengumpulan data percakapan publik mengenai **Teddy Indra Wijaya** di TikTok,
 sebagai tindak lanjut proposal TK-1 "Analisis Hubungan Parasosial dan Fan
@@ -31,17 +31,17 @@ src/scrapers/            satu berkas per platform, plus _common.py (opsi run, re
 src/run_scrape.py        perintah untuk menjalankan scraping
 src/summarize_runs.py    rekap jumlah data seluruh run
 src/make_sample.py       cuplikan teranonimisasi untuk data/sample/ dan docs/evidence/
-src/process.py           gabung run penuh jadi dataset analisis + laporan (C4)
+src/process.py           gabung run penuh jadi dataset analisis + laporan
 tests/                   tes unit, tanpa jaringan dan tanpa biaya
 third_party/             salinan library omkarcloud untuk TikTok dan Instagram (MIT)
-data/raw/                respons asli dari platform — tidak di-commit
-data/interim/            record ternormalisasi + manifest tiap run — tidak di-commit
-data/processed/          dataset siap analisis (C4) — tidak di-commit
+data/raw/                respons asli dari platform (tidak di-commit)
+data/interim/            record ternormalisasi + manifest tiap run (tidak di-commit)
+data/processed/          dataset siap analisis (tidak di-commit)
 data/sample/             contoh kecil teranonimisasi sebagai bukti
 docs/scrapers.md         cara kerja tiap scraper, semua opsi, hasil uji coba
-docs/decisions.md        catatan keputusan API vs scraping (bahan tulisan C3)
+docs/decisions.md        keputusan API vs scraping, ketentuan layanan, fokus TikTok
 docs/evidence/           tangkapan layar dan cuplikan bukti scraping
-logs/                    log tiap run — tidak di-commit
+logs/                    log tiap run (tidak di-commit)
 ```
 
 Penjelasan tiga lapis data dan kamus kolomnya ada di [`data/README.md`](data/README.md).
@@ -75,8 +75,8 @@ cp .env.example .env
 
 Daftar dependensi ada di `pyproject.toml` dengan versi dipatok pada rentang
 minor yang sama. `make lock` menulis versi persis yang sedang terpasang ke
-`requirements.lock.txt`; berkas ini **belum dibuat**. Setelah dibuat dan
-di-commit, anggota tim yang ingin lingkungan identik memasang dengan
+`requirements.lock.txt`. Berkas ini berisi versi yang dipakai saat membuat
+dataset akhir; untuk lingkungan yang identik, pasang dengan
 `pip install -r requirements.lock.txt`.
 
 ## Konfigurasi
@@ -103,7 +103,7 @@ di-commit, anggota tim yang ingin lingkungan identik memasang dengan
    Bagikan hanya lewat jalur pribadi, kepada anggota tim yang ikut menjalankan
    scraping atau modul yang meng-hash username.
 
-2. Buka `config/keywords.yaml` dan sesuaikan mengikuti hasil penguncian C1:
+2. Buka `config/keywords.yaml` dan sesuaikan dengan kebutuhan data penelitian:
 
    | Bagian | Dipakai untuk |
    |---|---|
@@ -112,7 +112,7 @@ di-commit, anggota tim yang ingin lingkungan identik memasang dengan
    | `kata_kunci`, `hashtag` | Sumber pencarian di ketiga platform; di X digabung menjadi satu kueri |
    | `akun_target` | Sumber tambahan TikTok/Instagram, hanya dipakai dengan `--with-accounts` |
    | `bahasa` | Filter `lang:` pada kueri X |
-   | `volume_target` | Target jumlah data (belum dipakai kode, untuk rujukan laporan) |
+   | `volume_target` | Target jumlah data (catatan saja, tidak dibaca kode) |
 
 3. Cek kesiapan tanpa mengambil data (ganti `tiktok` dengan `x` atau
    `instagram` untuk scraper lain). Yang diharapkan: baris terakhir
@@ -201,7 +201,7 @@ Di Windows (PowerShell), ganti `.venv/bin/python` dengan
 Run boleh dihentikan dengan Ctrl+C. Data yang sudah tertulis tetap tersimpan
 dan tetap dipakai `src.process` (status `interrupted` di manifest). Karena
 sumber ditelusuri berurutan (kata kunci dulu, lalu hashtag), run yang
-dihentikan di tengah membuat sumber terakhir kurang terwakili; catat di C5.
+dihentikan di tengah membuat sumber terakhir kurang terwakili.
 
 ### Dari data mentah ke dataset analisis
 
@@ -214,8 +214,7 @@ make process
 Hasilnya di `data/processed/`: `dataset_vNN.parquet` untuk analisis,
 `dataset_vNN.csv` untuk dibuka di Excel, `dataset_vNN.metadata.json` berisi
 asal-usul data, dan `dataset_vNN.report.md` berisi alur jumlah data, kriteria
-eksklusi per platform, sebaran waktu, bahasa, dan kelengkapan kolom. Angka C4
-dan C5 diambil dari `report.md`. Run uji (yang memakai `--limit`) otomatis
+eksklusi per platform, sebaran waktu, bahasa, dan kelengkapan kolom. Run uji (yang memakai `--limit`) otomatis
 tidak dipakai. Aturan lengkapnya ada di
 [`data/README.md`](data/README.md#dataset-processed-make-process).
 
@@ -276,19 +275,19 @@ Setiap run menulis `manifest.json` berisi parameter yang dipakai, salinan
 isi `config/keywords.yaml` saat itu, statistik (`counts`), status akhir
 (`completed`, `interrupted`, atau `failed`), serta versi Python dan commit
 kode. Arti tiap angka di `counts` ada di
-[`docs/scrapers.md`](docs/scrapers.md#perilaku-bersama). Angka jumlah data di
-laporan diambil dari `make stats`, bukan diketik ulang, supaya C1, C4, C5, dan
-README tidak saling berbeda.
+[`docs/scrapers.md`](docs/scrapers.md#perilaku-bersama). `make stats` merekap
+manifest seluruh run menjadi satu tabel.
 
 ## Catatan etika
 
 - Hanya mengambil konten dari akun publik; akun privat dilewati.
 - TikTok dan Instagram diakses tanpa login lewat library tidak resmi. Di
   TikTok, sesi dibuka lewat halaman `/explore` karena halaman bawaannya
-  diblokir anti-bot dari IP Indonesia. Kedua hal ini dinilai di C6.
+  diblokir anti-bot dari IP Indonesia.
 - Username disimpan dalam bentuk hash bergaram, tidak dalam bentuk asli.
-  Kolom `url` tidak memuat username. @username di dalam teks bisa disamarkan
-  dengan `--mask-mentions`.
+  Tautan video tidak memuat username, dan tautan komentar dikosongkan di
+  dataset processed. @username di dalam teks disamarkan dengan
+  `--mask-mentions`.
 - Jeda antar permintaan diatur lewat `REQUEST_DELAY_SECONDS` dan diberi
   variasi acak. Status 429 dari X dihormati dengan menunggu sesuai
   `Retry-After` atau `x-rate-limit-reset`.
@@ -296,13 +295,11 @@ README tidak saling berbeda.
   `data/sample/` disamarkan lebih jauh (mention diganti, teks dipotong, tautan
   dikosongkan).
 
-Uraian lengkapnya ada di bagian C6 laporan.
+Penilaian ketentuan layanan dan robots.txt per platform ada di
+[`docs/decisions.md`](docs/decisions.md) bagian 4.
 
-## Tim
+## Penyusun
 
-| Nama | Bagian |
-|---|---|
-| Azzahra Salsabila | C1 Kebutuhan Data, C7 Penutup |
-| Clara Aurelia Setiady | C2 Pipeline, C6 Etika |
-| Kania Almyra Bilqist | C3 Metode Pengumpulan Data, repositori dan scraper |
-| Nafia Levana Aulia | C4 Implementasi Pipeline, C5 Kualitas Data |
+Azzahra Salsabila, Clara Aurelia Setiady, Kania Almyra Bilqist, dan Nafia
+Levana Aulia (Program Studi Sistem Informasi). Tugas Kelompok 2 mata kuliah
+CSIE604284 Analitika Media Sosial.

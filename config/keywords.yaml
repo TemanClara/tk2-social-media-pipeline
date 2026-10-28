@@ -1,13 +1,12 @@
-# Parameter pengumpulan data.
-# SUMBER: Bagian C1 (Azzahra). Angka dan daftar di bawah masih sementara —
-# kunci nilainya di CP1 lalu perbarui file ini. Scraper membaca dari sini,
-# jadi tidak ada kata kunci yang ditulis langsung di dalam kode.
+# Parameter pengumpulan data. Scraper membaca dari sini, jadi tidak ada kata
+# kunci yang ditulis langsung di dalam kode. Dataset akhir hanya dari TikTok
+# (docs/decisions.md bagian 6).
 
 periode:
   mulai: "2024-10-01"   # pelantikan sebagai Sekretaris Kabinet
   selesai: "2026-09-30" # batas periode pada proposal TK-1
 
-# Jendela waktu di sekitar peristiwa pemicu. Dipakai bila tim memilih
+# Jendela waktu sesudah peristiwa pemicu. Dipakai bila memilih
 # pengambilan sampel per peristiwa, bukan pengumpulan penuh dua tahun.
 peristiwa_pemicu:
   - nama: pengumuman_kabinet
@@ -33,7 +32,7 @@ hashtag:
   - "letkolteddy"
 
 akun_target:
-  tiktok: []     # Belum diisi: handle TikTok akun fanbase/media belum ada di C1.
+  tiktok: []     # Belum diisi: handle TikTok akun fanbase/media belum ditetapkan.
                  # Dataset akhir dikumpulkan tanpa --with-accounts.
   instagram: []  # Tidak dipakai (dataset akhir hanya TikTok)
   x: []          # Tidak dipakai (dataset akhir hanya TikTok)

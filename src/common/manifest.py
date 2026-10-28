@@ -2,8 +2,7 @@
 
 Setiap run menghasilkan satu manifest.json berisi parameter yang dipakai,
 jumlah data yang masuk, dan waktu pelaksanaan. Gunanya ada dua. Pertama,
-angka jumlah data di laporan (C1 target, C4 hasil, C5 kualitas) bisa
-ditelusuri ke run tertentu, bukan diketik ulang dari ingatan. Kedua, salinan
+setiap angka jumlah data bisa ditelusuri ke run tertentu. Kedua, salinan
 isi config/keywords.yaml ikut disimpan, sehingga run lama tetap dapat
 dijelaskan meski parameternya sudah berubah sejak itu.
 """

@@ -2,7 +2,7 @@
 
     data/raw/        respons apa adanya dari platform, belum diubah
     data/interim/    record yang sudah dipetakan ke skema terpadu (JSONL)
-    data/processed/  dataset siap analisis (dihasilkan bagian C4)
+    data/processed/  dataset siap analisis (dihasilkan src/process.py)
 
 Pemisahan raw dan interim dilakukan karena pengambilan ulang data media
 sosial mahal dan belum tentu berhasil: unggahan bisa dihapus dan akses bisa

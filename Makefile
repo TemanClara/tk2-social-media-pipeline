@@ -35,10 +35,10 @@ scrape-instagram:  ## Jalankan scraping Instagram
 test:  ## Jalankan tes unit (tanpa jaringan)
 	$(BIN)/python -m unittest discover tests -v
 
-stats:  ## Rekap jumlah record per run (bahan C4/C5)
+stats:  ## Rekap jumlah record per run
 	$(BIN)/python -m src.summarize_runs
 
-process:  ## Gabung semua run penuh jadi dataset analisis + laporan (C4)
+process:  ## Gabung semua run penuh jadi dataset analisis + laporan
 	$(BIN)/python -m src.process
 
 clean:  ## Hapus cache Python dan log

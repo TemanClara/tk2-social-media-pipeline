@@ -56,8 +56,7 @@ def date_ranges(keywords: dict, window: str = "periode") -> list[tuple[datetime,
 
     "periode"   : satu rentang dari periode.mulai sampai akhir hari periode.selesai.
     "peristiwa" : satu rentang per peristiwa_pemicu, mulai tanggal peristiwa
-                  sampai `jendela_hari` hari sesudahnya. Ini tafsiran dari
-                  "di sekitar peristiwa" dan masih perlu dikonfirmasi ke C1.
+                  sampai `jendela_hari` hari sesudahnya.
     """
     if window == "periode":
         start = _parse_day(keywords["periode"]["mulai"])

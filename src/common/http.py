@@ -2,7 +2,7 @@
 
 Dipakai oleh scraper yang mengambil data lewat HTTP biasa. Scraper yang
 memakai library khusus (misalnya Playwright) tetap memanggil polite_sleep()
-agar jeda antar permintaan seragam di semua platform (lihat C6 Etika).
+agar jeda antar permintaan seragam di semua platform.
 """
 
 from __future__ import annotations

@@ -8,13 +8,13 @@ pada satu unggahan sebaiknya diambil utuh, bukan sebagian.
 Cara akses: library omkarcloud/instagram-scraper (third_party/), tanpa login.
 Instagram hanya menampilkan "top reels" kepada pengunjung yang belum login:
 sekitar 20-30 unggahan per kata kunci atau hashtag, tanpa tab terbaru dan
-tanpa filter tanggal. Keterbatasan ini dicatat di C3.
+tanpa filter tanggal.
 
 Sumber unggahan, dibaca dari config/keywords.yaml:
     kata_kunci              -> halaman populer kata kunci (bawaan)
     hashtag                 -> halaman hashtag (bawaan)
     akun_target.instagram   -> linimasa akun, hanya bila --with-accounts.
-                               Akun privat dilewati (lihat C6).
+                               Akun privat dilewati.
 
 Hasil pencarian tidak memuat tanggal dan jumlah like, jadi tiap unggahan
 dilengkapi lewat satu permintaan detail sebelum disaring berdasarkan periode.
@@ -69,7 +69,7 @@ class InstagramScraper(ScraperRuntime, BaseScraper):
         if self.options.with_accounts:
             accounts = self.keywords.get("akun_target", {}).get("instagram", [])
             if not accounts:
-                self.logger.warning("--with-accounts dipakai tapi akun_target.instagram masih kosong (menunggu C1).")
+                self.logger.warning("--with-accounts dipakai tapi akun_target.instagram masih kosong.")
             sources += [("akun", acc.lstrip("@"), self.lib.user_posts) for acc in accounts]
         self.logger.info("Instagram: %d sumber akan ditelusuri", len(sources))
 

@@ -7,7 +7,6 @@ produksi konten turunan.
 
 Catatan: seluruh teknik analitik berbasis teks, sehingga isi video tidak
 diproses. Yang disimpan adalah caption, hashtag, metadata, dan komentar.
-(Lihat keputusan terbuka nomor 5 pada lembar Acuan TK-1.)
 
 Cara akses: library omkarcloud/tiktok-scraper (third_party/), yang memanggil
 API web TikTok tanpa login dan tanpa API key. TikTok Research API tidak
@@ -25,7 +24,7 @@ yang ditulis setelah periode selesai.
 Urutan pencarian (--tiktok-sort): "likes" (bawaan) atau "relevance". Pada uji
 18 Okt 2026, "relevance" hampir hanya memberi video bulan terakhir (0 dan 18
 dari ~60 video masuk periode), sedangkan "likes" memberi 35 dan 40. "likes"
-mengutamakan video populer; bias ini dicatat di C3.
+mengutamakan video populer, sehingga video dari akun kecil kurang terwakili.
 
 Balasan komentar (--tiktok-replies N, bawaan 0): bila N > 0, untuk tiap
 komentar yang reply_count > 0 diambil sampai N halaman balasan (~20 per
