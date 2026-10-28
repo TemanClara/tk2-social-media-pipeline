@@ -22,6 +22,19 @@ Semua `--mask-mentions`, `--window periode`, `--tiktok-sort likes`. Video dan
 komentar yang sudah tersimpan dilewati otomatis di run berikutnya
 (`_seen_tiktok.txt`), dan `src/process.py` mencatat 0 duplikat antar-run.
 
+## Tangkapan layar (28 Okt 2026)
+
+Diambil dari branch `main` (commit `dea852f`). Run uji pada
+`tiktok_20261028_run.png` ditulis ke folder terpisah (`DATA_DIR`) dan tidak
+masuk dataset akhir.
+
+| Berkas | Yang ditampilkan |
+|---|---|
+| `semua_20261028_tes_1.png`, `semua_20261028_tes_2.png` | `make test`: 66 tes, `OK (skipped=1)`. Satu tes dilewati karena butuh pandas/pyarrow (`pip install -e ".[analysis]"`) |
+| `tiktok_20261028_dryrun.png` | Dry-run TikTok: parameter dari `keywords.yaml` (4 kata kunci, 4 hashtag, periode), `PSEUDONYM_SALT: terisi` tanpa menampilkan nilainya, `Dry-run lolos.` |
+| `tiktok_20261028_run.png` | Run uji `--limit 20 --max-pages 1 --comment-pages 1 --mask-mentions`: 1 video dan 19 komentar tersimpan, 0 error, 1 video dibuang karena di luar periode |
+| `tiktok_20261028_sample.png` | `data/sample/tiktok_sample.json` di VS Code: record dengan `author_hash`, `url` kosong, dan kolom `view_count`, `hashtags`, `language` |
+
 ## Run uji (15 Okt 2026, tidak masuk dataset akhir)
 
 | Platform | Berkas | Isi |
