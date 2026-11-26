@@ -1,0 +1,9 @@
+aturan,n_diperiksa,n_pelanggaran
+Video tidak punya induk,153,0
+conversation_id video = ID video,153,0
+Induk komentar adalah video di dataset,10702,0
+conversation_id komentar = ID video induk,10702,0
+Induk balasan adalah komentar di dataset,10795,0
+conversation_id balasan = milik komentar induk,10795,0
+Komentar tidak lebih awal dari videonya,10702,0
+Balasan tidak lebih awal dari komentar induknya,10795,0

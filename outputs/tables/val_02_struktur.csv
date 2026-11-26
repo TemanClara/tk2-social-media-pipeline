@@ -1,0 +1,32 @@
+kolom,dtype_tersimpan,jenis,jenis_harapan,sesuai
+platform,object,teks,teks,True
+item_type,object,teks,teks,True
+item_id,object,teks,teks,True
+parent_id,object,teks,teks,True
+conversation_id,object,teks,teks,True
+author_hash,object,teks,teks,True
+text,object,teks,teks,True
+text_clean,object,teks,teks,True
+created_at,"datetime64[ns, UTC]",waktu,waktu,True
+like_count,Int64,angka,angka,True
+reply_count,Int64,angka,angka,True
+share_count,Int64,angka,angka,True
+view_count,Int64,angka,angka,True
+hashtags,object,daftar,daftar,True
+language,object,teks,teks,True
+url,object,teks,teks,True
+query,object,teks,teks,True
+flag_text_missing,bool,boolean,boolean,True
+flag_non_indonesian,bool,boolean,boolean,True
+flag_mention_only,bool,boolean,boolean,True
+flag_repeated_by_author,bool,boolean,boolean,True
+flag_out_of_period,bool,boolean,boolean,True
+flag_created_at_invalid,bool,boolean,boolean,True
+flag_author_not_hashed,bool,boolean,boolean,True
+flag_item_type_invalid,bool,boolean,boolean,True
+flag_parent_missing,bool,boolean,boolean,True
+flag_conversation_missing,bool,boolean,boolean,True
+flag_negative_count,bool,boolean,boolean,True
+eligible,bool,boolean,boolean,True
+_scraped_at,"datetime64[ns, UTC]",waktu,waktu,True
+_run_id,object,teks,teks,True

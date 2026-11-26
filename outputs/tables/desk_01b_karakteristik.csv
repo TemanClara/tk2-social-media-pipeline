@@ -1,0 +1,11 @@
+indikator,nilai,catatan
+Record dalam dataset,21.650,sebelum filter eligible
+Record eligible,18.783,"86,8% dari dataset"
+Video eligible,147,
+Video dengan komentar eligible,148,termasuk video yang caption-nya tidak eligible
+Komentar eligible,9.350,unit analisis sentimen dan topik (RQ2)
+Balasan eligible,9.286,unit analisis RQ3
+Akun unik (hash) penulis komentar/balasan,16.136,"90,7% hanya menulis satu kali"
+Median kata per komentar / balasan,6 / 5,dari text_clean
+Median komentar+balasan per video,"84,5",maks. 850
+Komentar terkumpul / dilaporkan platform,10.702 / 222.285,"cakupan 4,8%; median per video 24,6%"

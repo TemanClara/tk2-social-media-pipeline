@@ -1,0 +1,43 @@
+item_type,kolom,n_kosong,persen_kosong,status
+comment,author_hash,0,0.0,lengkap
+comment,text,117,1.09,tidak terduga
+comment,text_clean,117,1.09,tidak terduga
+comment,created_at,0,0.0,lengkap
+comment,parent_id,0,0.0,lengkap
+comment,conversation_id,0,0.0,lengkap
+comment,like_count,0,0.0,lengkap
+comment,reply_count,0,0.0,lengkap
+comment,share_count,10702,100.0,menurut desain
+comment,view_count,10702,100.0,menurut desain
+comment,hashtags,0,0.0,lengkap
+comment,language,0,0.0,lengkap
+comment,url,10702,100.0,menurut desain
+comment,query,0,0.0,lengkap
+post,author_hash,0,0.0,lengkap
+post,text,2,1.31,tidak terduga
+post,text_clean,2,1.31,tidak terduga
+post,created_at,0,0.0,lengkap
+post,parent_id,153,100.0,menurut desain
+post,conversation_id,0,0.0,lengkap
+post,like_count,0,0.0,lengkap
+post,reply_count,0,0.0,lengkap
+post,share_count,0,0.0,lengkap
+post,view_count,0,0.0,lengkap
+post,hashtags,0,0.0,lengkap
+post,language,0,0.0,lengkap
+post,url,0,0.0,lengkap
+post,query,0,0.0,lengkap
+reply,author_hash,0,0.0,lengkap
+reply,text,267,2.47,tidak terduga
+reply,text_clean,267,2.47,tidak terduga
+reply,created_at,0,0.0,lengkap
+reply,parent_id,0,0.0,lengkap
+reply,conversation_id,0,0.0,lengkap
+reply,like_count,0,0.0,lengkap
+reply,reply_count,10795,100.0,menurut desain
+reply,share_count,10795,100.0,menurut desain
+reply,view_count,10795,100.0,menurut desain
+reply,hashtags,0,0.0,lengkap
+reply,language,0,0.0,lengkap
+reply,url,10795,100.0,menurut desain
+reply,query,0,0.0,lengkap

@@ -1,0 +1,4 @@
+hubungan,n_unit,total,porsi_1pct_teratas,porsi_10pct_teratas,porsi_5_unit_teratas,gini
+Video → komentar+balasan,148,18636.0,0.0787,0.3832,0.1631,0.524
+Komentar → suka,9350,6977376.0,0.7509,0.9888,0.1305,0.979
+Akun → komentar+balasan,16136,18636.0,0.0536,0.2208,0.0065,0.126

@@ -1,0 +1,188 @@
+{
+  "dataset": "dataset_v05",
+  "periode": {
+    "mulai": "2024-10-01",
+    "selesai": "2026-09-30"
+  },
+  "total_record": 21650,
+  "record_eligible": 18783,
+  "video_eligible": 147,
+  "video_dengan_komentar_eligible": 148,
+  "komentar_eligible": 9350,
+  "balasan_eligible": 9286,
+  "komentar_balasan_eligible": 18636,
+  "akun_unik_komentar_balasan": 16136,
+  "porsi_akun_satu_komentar": 0.9066,
+  "median_kata_komentar": 6.0,
+  "median_kata_balasan": 5.0,
+  "median_komentar_balasan_per_video": 84.5,
+  "maks_komentar_balasan_per_video": 850,
+  "komentar_terkumpul": 10702,
+  "komentar_dilaporkan_platform": 222285,
+  "cakupan_agregat": 0.0481,
+  "cakupan_median_per_video": 0.2459,
+  "flag_eksklusi": {
+    "flag_text_missing": 389,
+    "flag_non_indonesian": 240,
+    "flag_mention_only": 387,
+    "flag_repeated_by_author": 117,
+    "flag_out_of_period": 1822
+  },
+  "bulan_n_kecil": [
+    "2024-11",
+    "2024-12",
+    "2025-01",
+    "2025-03",
+    "2025-05",
+    "2025-06",
+    "2025-07",
+    "2025-08",
+    "2025-09"
+  ],
+  "porsi_komentar_balasan_2026": 0.9195,
+  "porsi_komentar_balasan_12_bulan_pertama": 0.0431,
+  "video_diunggah_per_tahun": {
+    "2024": 1,
+    "2025": 13,
+    "2026": 133
+  },
+  "jeda_hari": {
+    "median": 1.47,
+    "p75": 7.84,
+    "p90": 39.84,
+    "porsi_dalam_1_hari": 0.4267,
+    "porsi_dalam_7_hari": 0.7375,
+    "porsi_dalam_30_hari": 0.868,
+    "negatif": 0
+  },
+  "engagement_video": {
+    "tayang": {
+      "n": 147.0,
+      "median": 635100.0,
+      "p75": 2200000.0,
+      "p90": 5080000.0,
+      "maks": 24000000.0
+    },
+    "suka": {
+      "n": 147.0,
+      "median": 18700.0,
+      "p75": 80100.0,
+      "p90": 185340.0,
+      "maks": 844800.0
+    },
+    "komentar_dilaporkan": {
+      "n": 147.0,
+      "median": 316.0,
+      "p75": 1784.5,
+      "p90": 5137.2,
+      "maks": 11300.0
+    },
+    "bagikan": {
+      "n": 147.0,
+      "median": 1086.0,
+      "p75": 5711.0,
+      "p90": 21100.0,
+      "maks": 198100.0
+    }
+  },
+  "median_rasio_suka_per_tayang_video": 0.0431,
+  "engagement_komentar": {
+    "komentar": {
+      "n": 9350.0,
+      "median": 2.0,
+      "p75": 13.0,
+      "p90": 143.0,
+      "maks": 227651.0,
+      "porsi_tanpa_suka": 0.3003,
+      "porsi_suka_1pct_teratas": 0.7509
+    },
+    "balasan": {
+      "n": 9286.0,
+      "median": 1.0,
+      "p75": 4.0,
+      "p90": 22.0,
+      "maks": 20244.0,
+      "porsi_tanpa_suka": 0.4856,
+      "porsi_suka_1pct_teratas": 0.694
+    }
+  },
+  "porsi_komentar_berbalasan": 0.3557,
+  "konsentrasi": {
+    "Video → komentar+balasan": {
+      "n_unit": 148,
+      "porsi_1pct_teratas": 0.0787,
+      "porsi_10pct_teratas": 0.3832,
+      "porsi_5_unit_teratas": 0.1631,
+      "gini": 0.524
+    },
+    "Komentar → suka": {
+      "n_unit": 9350,
+      "porsi_1pct_teratas": 0.7509,
+      "porsi_10pct_teratas": 0.9888,
+      "porsi_5_unit_teratas": 0.1305,
+      "gini": 0.979
+    },
+    "Akun → komentar+balasan": {
+      "n_unit": 16136,
+      "porsi_1pct_teratas": 0.0536,
+      "porsi_10pct_teratas": 0.2208,
+      "porsi_5_unit_teratas": 0.0065,
+      "gini": 0.126
+    }
+  },
+  "tagar_caption": {
+    "video_tanpa_tagar": 6,
+    "tagar_unik": 189,
+    "porsi_video_bertagar_figur": 0.898,
+    "porsi_video_bertagar_generik": 0.5714,
+    "top10": [
+      [
+        "teddyindrawijaya",
+        68
+      ],
+      [
+        "fyp (semua varian)",
+        64
+      ],
+      [
+        "mayorteddy",
+        55
+      ],
+      [
+        "letkolteddy",
+        44
+      ],
+      [
+        "seskabteddyindrawijaya",
+        35
+      ],
+      [
+        "prabowo",
+        28
+      ],
+      [
+        "teddy",
+        16
+      ],
+      [
+        "seskabteddy",
+        14
+      ],
+      [
+        "viral",
+        13
+      ],
+      [
+        "capcut",
+        12
+      ]
+    ]
+  },
+  "sebutan_figur_caption": {
+    "pangkat militer saja": 54,
+    "jabatan sipil saja": 40,
+    "keduanya": 40,
+    "tidak keduanya (nama saja/lainnya)": 13
+  },
+  "dibuat_dari": "dataset_v05.parquet"
+}

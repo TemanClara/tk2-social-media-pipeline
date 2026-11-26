@@ -1,0 +1,12 @@
+flag,post,comment,reply,total,sama_dengan_metadata
+flag_text_missing,2,119,268,389,True
+flag_non_indonesian,4,135,101,240,True
+flag_mention_only,0,34,353,387,True
+flag_repeated_by_author,0,50,67,117,True
+flag_out_of_period,0,1049,773,1822,True
+flag_created_at_invalid,0,0,0,0,True
+flag_author_not_hashed,0,0,0,0,True
+flag_item_type_invalid,0,0,0,0,True
+flag_parent_missing,0,0,0,0,True
+flag_conversation_missing,0,0,0,0,True
+flag_negative_count,0,0,0,0,True
