@@ -1,0 +1,5 @@
+run_id,status,mulai_utc,urutan,halaman_video,halaman_komentar,halaman_balasan,record_manifest,record_di_dataset
+tiktok_20261025_144837,completed,2026-10-25 07:48,likes,3,2,0,10440,10440
+tiktok_20261025_150459,completed,2026-10-25 08:04,likes,1,1,1,5387,5387
+tiktok_20261025_155253,interrupted,2026-10-25 08:52,likes,1,1,1,2460,2460
+tiktok_20261025_190404,completed,2026-10-25 12:04,likes,1,1,1,3363,3363

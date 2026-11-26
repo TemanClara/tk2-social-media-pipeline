@@ -1,0 +1,122 @@
+{
+  "dataset": "dataset_v05",
+  "asal_usul": {
+    "skrip": "src/process.py",
+    "commit": "3963e84",
+    "dibuat_utc": "2026-10-27T02:49:36",
+    "lingkungan": {
+      "python": "3.12.10",
+      "pandas": "2.3.3",
+      "pyarrow": "26.0.0"
+    },
+    "jumlah_run": 4,
+    "run_terputus": [
+      "tiktok_20261025_155253"
+    ],
+    "waktu_pengambilan_utc": [
+      "2026-10-25 07:48",
+      "2026-10-25 12:55"
+    ],
+    "dedup": [
+      "platform",
+      "item_id"
+    ]
+  },
+  "kolom_hilang": [],
+  "kolom_tambahan": [],
+  "kolom_tipe_tidak_sesuai": [],
+  "kosong_tidak_terduga": {
+    "comment.text": 117,
+    "comment.text_clean": 117,
+    "post.text": 2,
+    "post.text_clean": 2,
+    "reply.text": 267,
+    "reply.text_clean": 267
+  },
+  "teks_kosong": 389,
+  "duplikat": {
+    "id_ganda": 0,
+    "komentar_ganda_akun_sama": 117,
+    "teks_unik_eligible": 17306,
+    "teks_muncul_2x_atau_lebih": 214,
+    "record_pada_teks_berulang": 648,
+    "teks_muncul_10x_atau_lebih": 2,
+    "median_kata_teks_berulang": 1.0,
+    "teks_panjang_berulang": 1,
+    "record_teks_panjang_berulang": 3
+  },
+  "pelanggaran_relasi": 0,
+  "komentar_eligible_video_tidak_eligible": 272,
+  "balasan_eligible_induk_tidak_eligible": 158,
+  "validitas": {
+    "created_at_tidak_terbaca": 0,
+    "sebelum_periode": 0,
+    "sesudah_periode": 1822,
+    "created_at_maks": "2026-10-25 12:17",
+    "angka_negatif": 0,
+    "author_hash_format_salah": 0,
+    "item_type_tidak_dikenal": 0
+  },
+  "bahasa_komentar_balasan_eligible": {
+    "id": 15610,
+    "ms": 1160,
+    "un": 1059,
+    "en": 350,
+    "tr": 70,
+    "tl": 62
+  },
+  "porsi_kode_id": 0.8376,
+  "privasi": {
+    "teks_dengan_mention_tersamar": 793,
+    "text_clean_dengan_[USER]": 816,
+    "text_clean_dengan_[URL]": 12,
+    "record_dengan_@_tersisa": 11,
+    "record_dengan_@_tersisa_eligible": 8,
+    "pola_@_tersisa": {
+      "@ di tengah kata (bukan mention)": 5,
+      "@.nama (kemungkinan mention lolos)": 3,
+      "@@nama (kemungkinan mention lolos)": 3
+    },
+    "url_komentar_balasan_terisi": 0,
+    "pola_surel": 0,
+    "pola_telepon": 0
+  },
+  "eksklusi": {
+    "masuk": 21650,
+    "dataset": 21650,
+    "eligible": 18783,
+    "dikeluarkan": 2867,
+    "porsi_dikeluarkan": 0.1324,
+    "record_lebih_dari_satu_flag": 88,
+    "per_flag": {
+      "flag_text_missing": 389,
+      "flag_non_indonesian": 240,
+      "flag_mention_only": 387,
+      "flag_repeated_by_author": 117,
+      "flag_out_of_period": 1822
+    }
+  },
+  "teks": {
+    "n": 18636,
+    "median_kata": 5.0,
+    "p90_kata": 15.0,
+    "porsi_satu_kata": 0.1237,
+    "porsi_maks_dua_kata": 0.221,
+    "porsi_tanpa_huruf": 0.0475,
+    "n_tanpa_huruf": 885,
+    "porsi_mengandung_emoji": 0.4123,
+    "porsi_mengandung_[USER]": 0.0204
+  },
+  "cakupan": {
+    "komentar_terkumpul": 10702,
+    "komentar_dilaporkan": 222285,
+    "porsi_komentar": 0.0481,
+    "median_porsi_komentar_per_video": 0.2459,
+    "komentar_berbalasan_menurut_platform": 3585,
+    "porsi_komentar_berbalasan_yang_balasannya_terambil": 0.3844,
+    "balasan_terkumpul": 10795,
+    "balasan_dilaporkan": 56210,
+    "porsi_balasan": 0.192
+  },
+  "dibuat_dari": "dataset_v05.parquet"
+}
