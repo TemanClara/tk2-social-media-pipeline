@@ -1,0 +1,5 @@
+tahap,jumlah,porsi_dari_komentar_eligible
+Komentar eligible,9350,1.0
+Dibuang: tanpa kata berhuruf,401,0.0429
+Dibuang: 1 s.d. 2 kata,1488,0.1591
+Korpus topic modeling,7461,0.798

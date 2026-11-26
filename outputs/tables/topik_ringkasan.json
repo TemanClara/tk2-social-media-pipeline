@@ -1,0 +1,72 @@
+{
+  "korpus": {
+    "Komentar eligible": 9350,
+    "Dibuang: tanpa kata berhuruf": 401,
+    "Dibuang: 1 s.d. 2 kata": 1488,
+    "Korpus topic modeling": 7461
+  },
+  "kosakata": {
+    "ukuran": 1532,
+    "komentar_tanpa_kata_kosakata": 520
+  },
+  "pemilihan": {
+    "min_cluster_size": 40,
+    "metode": "eom",
+    "alasan": "dipilih manual lewat KONFIG_TERPILIH",
+    "min_samples": 10,
+    "umap": {
+      "n_neighbors": 15,
+      "n_components": 5,
+      "min_dist": 0.0,
+      "metric": "cosine"
+    },
+    "seed": 42,
+    "batas": {
+      "outlier": 0.5,
+      "k": [
+        5,
+        40
+      ],
+      "topik_terbesar": 0.35
+    }
+  },
+  "model_umum": {
+    "k_topik": 32,
+    "porsi_outlier": 0.3702,
+    "npmi_rata2": -0.2911,
+    "diversity": 0.9375,
+    "ari_antar_seed": [
+      0.709,
+      0.7
+    ],
+    "topik_dominasi_satu_video": 0,
+    "topik_tidak_stabil": 4,
+    "topik_banyak_teks_identik": 0,
+    "topik_berlabel_manual": 0,
+    "jumlah_label_akhir": 32,
+    "kelompok_terisi": false
+  },
+  "bulan_ditampilkan": [
+    "2025-11",
+    "2025-12",
+    "2026-01",
+    "2026-02",
+    "2026-03",
+    "2026-04",
+    "2026-05",
+    "2026-06",
+    "2026-07",
+    "2026-08",
+    "2026-09"
+  ],
+  "lingkungan": {
+    "model_embedding": "paraphrase-multilingual-MiniLM-L12-v2",
+    "bertopic": "0.17.4",
+    "umap-learn": "0.6.0",
+    "hdbscan": "0.8.44",
+    "sentence-transformers": "6.3.0",
+    "gensim": "4.4.0",
+    "scikit-learn": "1.9.1"
+  },
+  "dibuat_dari": "dataset_v05.parquet"
+}
